@@ -78,8 +78,14 @@ const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
 
               return (
                 <li className='neighborhood' key={key}>
-                  <Link to={`/neighborhoods/${slug}`}>
-                    {item} {Icon && <Icon />}
+                  <Link
+                    to={`/neighborhoods/${slug}`}
+                    style={nearbyBlurb?.img ? { backgroundImage: `url(${nearbyBlurb.img})` } : undefined}
+                  >
+                    <div className="neighborhood__overlay">
+                      {Icon && <Icon />}
+                      <span>{item}</span>
+                    </div>
                   </Link>
                 </li>
               );

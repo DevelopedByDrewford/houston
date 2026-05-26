@@ -31,7 +31,7 @@ const Neighborhoods = () => {
 
   return (
     <div className="neighborhood-list">
-      <h2>NeigHBorHoods <span>({filtered.length}/{neighborhoods.length})</span></h2>
+      <h2>Neighborhoods <span>({filtered.length}/{neighborhoods.length})</span></h2>
       <input
         type="text"
         placeholder="Search neighborhoods..."
@@ -41,14 +41,20 @@ const Neighborhoods = () => {
       />
 
       <ul className='neighborhoods'>
-         {filtered.map((name, index) => {
+        {filtered.map((name, index) => {
           const match = neighborhoodBlurbs.find(b => b.name === name);
           const Icon = match?.icon;
 
           return (
             <li className='neighborhood' key={index}>
-              <Link to={`/neighborhoods/${slugify(name)}`}>
-                {name} {Icon && <Icon className="inline-icon" />}
+              <Link
+                to={`/neighborhoods/${slugify(name)}`}
+                style={match?.img ? { backgroundImage: `url(${match.img})` } : undefined}
+              >
+                <div className="neighborhood__overlay">
+                  {Icon && <Icon />}
+                  <span>{name}</span>
+                </div>
               </Link>
             </li>
           );

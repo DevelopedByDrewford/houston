@@ -37,7 +37,7 @@ const Navigation = ({ setLat, setLon, setZoom }) => {
       <Link to="/food" onClick={handleClick()}>Food</Link>
       <Link to="/activities" onClick={handleClick()}>Activities</Link>
       <Link to="/neighborhoods">Hoods</Link>
-      <Link to='/resources'>More</Link>
+      <Link to='/resources'>Resources</Link>
       {/* <Link to="/about" onClick={handleClick()}>About</Link> */}
     </div>
   );

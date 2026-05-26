@@ -10,13 +10,15 @@ const Home = ({lat, setLat, lon, setLon, zoom, setZoom}) => {
 
   return (
     <div className='container home'>
-      <img 
-        className='home__header-img'
-        src='https://i.imgur.com/hrgsIPz.png' />
-
-      <div className='home__header'>
-        <h1>dREW's HOuSToN sPOTS</h1>
-        <p>{totalLocations} locations recorded so far...</p>
+      <div className='home__hero'>
+        <img
+          className='home__header-img'
+          src='https://i.imgur.com/hrgsIPz.png'
+          alt='Houston skyline' />
+        <div className='home__header'>
+          <h1>Houston Spots</h1>
+          <p>{totalLocations} curated spots around town</p>
+        </div>
       </div>
 
 

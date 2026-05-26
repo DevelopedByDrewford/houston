@@ -19,7 +19,7 @@ const neighborhoodBlurbs = [
     {
         name: 'Airline',
         blurb: "Airline is a diverse and bustling neighborhood located just north of central Houston, known for its vibrant markets and cultural mix. One of its most iconic spots is the Houston Farmers Market, offering a rich selection of local produce and international goods. The area is a hub for authentic food, small businesses, and a strong sense of local pride. Airline is where tradition, entrepreneurship, and community come together.",
-        nearby: ['Northside', 'Independence Heights', 'Greater Heights', 'Acres Home', 'Northline'],
+        nearby: ['Northside', 'Independence Heights', 'Acres Home'],
         icon: FaStore,
         img: 'https://i.imgur.com/gczEaJs.png' 
     },

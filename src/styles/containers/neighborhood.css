@@ -43,16 +43,22 @@
   max-width: 400px;
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  border: 1.5px solid #ccc;
+  border: 1.5px solid #444;
   border-radius: 6px;
   outline: none;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
+  background-color: #111;
+  color: white;
+}
+
+.neighborhood-search::placeholder {
+  color: #888;
 }
 
 .neighborhood-search:focus {
-  border-color: #0077ff;
-  box-shadow: 0 0 5px rgba(0, 119, 255, 0.5);
+  border-color: var(--orange);
+  box-shadow: 0 0 5px rgba(229, 114, 0, 0.4);
 }
 
 .neighborhoods {
@@ -84,41 +90,47 @@
 }
 
 .neighborhood {
-    height: 5rem;
-    min-width: 6rem;
-    max-width: 7rem;
-    font-size: .8rem;
-    border: 2px solid var(--orange);
-    flex-grow: 1; /* lets items grow to fill space */
-    flex-basis: 5rem; /* starting width before growing */
-    /* optionally: flex-shrink: 1 (default), or flex: 1 1 5rem */
+    height: 160px;
+    min-width: 140px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-grow: 1;
+    flex-basis: 140px;
 }
 
 .neighborhood a {
     text-decoration: none;
-    font-family: 'Ranchers';
-    letter-spacing: 0.5px;
-    color: var(--orange);
+    background-size: cover;
+    background-position: center;
     background-color: var(--darkblue);
-    display: flex;
-    justify-content: center;  /* center horizontally */
-    align-items: center;      /* center vertically */
-    flex-direction: column;
-    gap: 5px;
+    display: block;
+    position: relative;
     height: 100%;
     width: 100%;
-
-    margin: 0;
-    box-sizing: border-box;
-    text-align: center;       /* center multiline text */
-    white-space: normal;      /* allow wrapping */
-    word-wrap: break-word;    /* break long words if needed */
-    padding: 0 .1rem;
 }
 
-.neighborhood a svg {
+.neighborhood__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 100%);
+    padding: 0.7rem 0.4rem 0.45rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
     color: white;
-    font-size: 1.1rem;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.78rem;
+    text-align: center;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.neighborhood__overlay svg {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 
@@ -189,22 +201,16 @@
 }
 
 @media (min-width: 601px) {
-    .neighborhood,
-    .neighborhood a,
-    .neighborhood a svg {
-        transition: all .3s;
+    .neighborhood a {
+        transition: transform 0.3s ease;
     }
 
-    .neighborhood:hover {
-        border: 2px solid yellow;
+    .neighborhood:hover a {
+        transform: scale(1.07);
     }
 
-    .neighborhood a:hover {
-        background-color: #001A3A;
-    }
-
-    .neighborhood a:hover svg {
-        color: yellow;
+    .neighborhood a:hover .neighborhood__overlay {
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 100%);
     }
 
     /* single page */
