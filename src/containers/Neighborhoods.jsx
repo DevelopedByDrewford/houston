@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import locations from '../data/locations';
 import neighborhoodBlurbs from '../data/neighborhoods';
@@ -12,6 +12,7 @@ const slugify = (text) =>
 
 const Neighborhoods = () => {
   const [query, setQuery] = useState('');
+  const [loadedImgs, setLoadedImgs] = useState(new Set());
 
   const neighborhoods = useMemo(() => {
     if (!Array.isArray(locations)) return [];
@@ -21,6 +22,15 @@ const Neighborhoods = () => {
         .map(loc => loc.neighborhood)
         .filter(n => typeof n === 'string')
     )].sort((a, b) => a.localeCompare(b));
+  }, []);
+
+  useEffect(() => {
+    neighborhoodBlurbs.forEach(b => {
+      if (!b.img) return;
+      const img = new Image();
+      img.onload = () => setLoadedImgs(prev => new Set([...prev, b.img]));
+      img.src = b.img;
+    });
   }, []);
 
   const filtered = useMemo(() => {
@@ -44,12 +54,13 @@ const Neighborhoods = () => {
         {filtered.map((name, index) => {
           const match = neighborhoodBlurbs.find(b => b.name === name);
           const Icon = match?.icon;
+          const imgLoaded = !match?.img || loadedImgs.has(match.img);
 
           return (
-            <li className='neighborhood' key={index}>
+            <li className={`neighborhood${imgLoaded ? '' : ' neighborhood--skeleton'}`} key={index}>
               <Link
                 to={`/neighborhoods/${slugify(name)}`}
-                style={match?.img ? { backgroundImage: `url(${match.img})` } : undefined}
+                style={match?.img && imgLoaded ? { backgroundImage: `url(${match.img})` } : undefined}
               >
                 <div className="neighborhood__overlay">
                   {Icon && <Icon />}
