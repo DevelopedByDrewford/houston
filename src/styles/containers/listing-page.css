@@ -17,12 +17,12 @@
     min-height: calc(100svh - 12.5rem);
 }
 
-.listing__header--food {
-    
-}
-
 .listing__header--activities {
     background-image: url('https://i.imgur.com/kQ3zUQc.jpeg');
+}
+
+.listing__header--neighborhoods {
+    background-image: url('https://i.imgur.com/CMEvmRx.png');
 }
 
 .listing__header span {
