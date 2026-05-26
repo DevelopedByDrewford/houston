@@ -16,6 +16,7 @@ import Activities from './containers/Activities';
 import Resources from './containers/Resources';
 
 import TestContainer from './containers/TestContainer';
+import AddLocation from './containers/AddLocation';
 
 // Utilities
 import ScrollToTopReroute from './utils/ScrollToTopReroute';
@@ -94,9 +95,13 @@ function App() {
                   path="/resources" 
                   element={<Resources />} />
 
-                <Route 
+                <Route
                   path='/test'
                   element={<TestContainer />} />
+
+                <Route
+                  path='/add-location'
+                  element={<AddLocation />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
