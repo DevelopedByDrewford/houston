@@ -3,13 +3,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCaBXGhNoiV2e76kCp5x8hUunqjyjduwbE",
-  authDomain: "houston-spots.firebaseapp.com",
-  projectId: "houston-spots",
-  storageBucket: "houston-spots.firebasestorage.app",
-  messagingSenderId: "755184831800",
-  appId: "1:755184831800:web:3a824c2a6d28d4440645cd",
-  measurementId: "G-YMC18YQJCW"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
