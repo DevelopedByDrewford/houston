@@ -2322,7 +2322,7 @@ const locations = [
     {
         name: 'Sugar Room',
         category: 'bar',
-        badges: ['open late', 'paid parking', , 'outdoor seating', 'alcohol available', 'DJ'],
+        badges: ['open late', 'paid parking', 'outdoor seating', 'alcohol available', 'DJ'],
         coordinates: [29.770604569930263, -95.41329371711167],
         neighborhood: 'Washington',
         img: 'https://i.imgur.com/C80jglX.png',

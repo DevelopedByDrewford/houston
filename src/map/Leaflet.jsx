@@ -4,11 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.pinsearch';
 import 'leaflet-providers'; 
 
-import locations from '../data/locations';
 import icons from '../data/icons';
 import generateLocationSlug from '../utils/slug.js';
 
-const Leaflet = ({ lat, lon, zoom, setZoom }) => {
+const Leaflet = ({ lat, lon, zoom, setZoom, locations }) => {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
 

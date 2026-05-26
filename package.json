@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "firebase": "^12.13.0",
     "leaflet": "^1.9.4",
     "leaflet-providers": "^2.0.0",
     "leaflet.pinsearch": "^1.0.5",

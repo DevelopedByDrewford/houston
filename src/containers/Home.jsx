@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import Highlight from '../components/Highlight';
 import Weather from '../components/Weather';
 import Leaflet from "../map/Leaflet";
-import locations from "../data/locations";
+import { useLocations } from '../contexts/LocationsContext';
 
 const Home = ({lat, setLat, lon, setLon, zoom, setZoom}) => {
-  const totalLocations = Object.keys(locations).length;
+  const { locations, loading } = useLocations();
+  const totalLocations = locations.length;
 
   return (
     <div className='container home'>
@@ -17,17 +18,24 @@ const Home = ({lat, setLat, lon, setLon, zoom, setZoom}) => {
           alt='Houston skyline' />
         <div className='home__header'>
           <h1>Houston Spots</h1>
-          <p>{totalLocations} curated spots around town</p>
+          <p>{loading ? '—' : totalLocations} curated spots around town</p>
         </div>
       </div>
-
 
       <div className='home__widgets-box'>
         <Weather />
         <Highlight setLat={setLat} setLon={setLon} setZoom={setZoom}/>
       </div>
 
-      <Leaflet lat={lat} lon={lon} zoom={zoom} setZoom={setZoom}/>
+      {!loading && (
+        <Leaflet
+          lat={lat}
+          lon={lon}
+          zoom={zoom}
+          setZoom={setZoom}
+          locations={locations}
+        />
+      )}
     </div>
   );
 };

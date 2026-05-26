@@ -347,6 +347,13 @@
     border: 2px solid #E57200;
 }
 
+.add-location__action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
 .add-location__copy-btn {
     display: block;
     width: 100%;
@@ -361,7 +368,6 @@
     letter-spacing: 0.06em;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 1.5rem;
 }
 
 .add-location__copy-btn:hover {
@@ -373,6 +379,68 @@
     background: #2ecc71;
     border-color: #2ecc71;
     color: white;
+}
+
+.add-location__submit-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background: #E57200;
+    color: white;
+    border: 2px solid #E57200;
+    border-radius: 4px;
+    font-family: 'Avenir Next Condensed', sans-serif;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-location__submit-btn:hover:not(:disabled) {
+    background: #c96500;
+    border-color: #c96500;
+}
+
+.add-location__submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.add-location__submit-btn.success {
+    background: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.add-location__error {
+    font-family: 'Avenir Next Condensed', sans-serif;
+    font-size: 0.95rem;
+    color: #c0392b;
+    background: #fdf0ee;
+    border: 1px solid #e74c3c;
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.add-location__success {
+    font-family: 'Avenir Next Condensed', sans-serif;
+    font-size: 0.95rem;
+    color: #1a7a45;
+    background: #eafaf1;
+    border: 1px solid #2ecc71;
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.add-location__success code,
+.add-location__error code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    background: rgba(0,0,0,0.06);
+    padding: 0 3px;
+    border-radius: 2px;
 }
 
 .add-location__summary {
@@ -478,6 +546,16 @@
 .add-location__nav-btn.reset:hover {
     background: #222;
     border-color: #222;
+}
+
+/* Login form */
+.add-location__login {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 /* Responsive */

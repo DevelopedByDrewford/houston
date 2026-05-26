@@ -5,10 +5,11 @@ import Filters from '../components/Filters';
 import Location from '../components/Location';
 
 import buttonData from '../data/activity-types';
-import activitiesFiltered from '../utils/activities-filtered';
-import locations from '../data/locations';
+import buildActivitiesFiltered from '../utils/activities-filtered';
+import { useLocations } from '../contexts/LocationsContext';
 
 const Activities = ({ setLat, setLon, setZoom }) => {
+  const { locations, loading } = useLocations();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [title, setTitle] = useState(buttonData[0].title);
   const [description, setDescription] = useState(buttonData[0].description);
@@ -16,7 +17,7 @@ const Activities = ({ setLat, setLon, setZoom }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
-  const list = activitiesFiltered;
+  const activitiesFiltered = buildActivitiesFiltered(locations);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
@@ -81,7 +82,9 @@ const Activities = ({ setLat, setLon, setZoom }) => {
         <span>Out in H-Town</span>
       </h2>
 
-      {!modalOpen && (
+      {loading && <p style={{ textAlign: 'center', padding: '2rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>}
+
+      {!loading && !modalOpen && (
         <div className="listing__search-bar">
           <input
             type="text"
@@ -97,15 +100,15 @@ const Activities = ({ setLat, setLon, setZoom }) => {
         </div>
       )}
 
-      {!modalOpen && (
+      {!loading && !modalOpen && (
         <>
-          <CategoryButtons 
-            buttonData={buttonData} 
+          <CategoryButtons
+            buttonData={buttonData}
             changeCategory={changeCategory}
           />
 
           <Filters
-            list={list}
+            list={activitiesFiltered}
             selectedCategory={selectedCategory}
             onFilterChange={setSelectedFilters}
           />
@@ -119,13 +122,13 @@ const Activities = ({ setLat, setLon, setZoom }) => {
             </div>
           </div>
 
-          <div className='location__container'>   
+          <div className='location__container'>
             {pageActivities.map((item, key) => (
-              <Location 
-                key={key} 
-                item={item} 
-                setLat={setLat} 
-                setLon={setLon} 
+              <Location
+                key={key}
+                item={item}
+                setLat={setLat}
+                setLon={setLon}
                 setZoom={setZoom}
               />
             ))}
@@ -134,11 +137,11 @@ const Activities = ({ setLat, setLon, setZoom }) => {
               <>
                 <div className='see-more-photos'>Additional Photo Locations</div>
                 {photoLocations.map((item, key) => (
-                  <Location 
-                    key={key} 
-                    item={item} 
-                    setLat={setLat} 
-                    setLon={setLon} 
+                  <Location
+                    key={key}
+                    item={item}
+                    setLat={setLat}
+                    setLon={setLon}
                     setZoom={setZoom}
                   />
                 ))}
@@ -148,7 +151,7 @@ const Activities = ({ setLat, setLon, setZoom }) => {
         </>
       )}
 
-      {modalOpen && (
+      {!loading && modalOpen && (
         <div className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
 

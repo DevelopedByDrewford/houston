@@ -4,11 +4,12 @@ import CategoryButtons from '../components/CategoryButtons';
 import Filters from "../components/Filters";
 import Location from "../components/Location";
 
-import locations from "../data/locations";
 import buttonData from "../data/restaurant-types";
-import restaurantsFiltered from "../utils/restaurants-filtered";
+import buildRestaurantsFiltered from "../utils/restaurants-filtered";
+import { useLocations } from "../contexts/LocationsContext";
 
 const Restaurants = ({ setLat, setLon, setZoom }) => {
+  const { locations, loading } = useLocations();
   const [selectedCategory, setSelectedCategory] = useState("food");
   const [title, setTitle] = useState(buttonData[0].title);
   const [description, setDescription] = useState(buttonData[0].description);
@@ -16,7 +17,7 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
-  const list = restaurantsFiltered;
+  const restaurantsFiltered = buildRestaurantsFiltered(locations);
 
   const changeCategory = (e) => {
     const { value } = e.currentTarget;
@@ -70,8 +71,9 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
         <span>HouStOn EaTs</span>
       </h2>
 
-      {/* Show search bar only when modal is closed */}
-      {!modalOpen && (
+      {loading && <p style={{ textAlign: 'center', padding: '2rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>}
+
+      {!loading && !modalOpen && (
         <div className="listing__search-bar">
           <input
             type="text"
@@ -79,7 +81,6 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              // Open modal when user starts typing
               if (!modalOpen && e.target.value.trim() !== "") {
                 setModalOpen(true);
               }
@@ -88,27 +89,23 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
         </div>
       )}
 
-      {/* Show main content only when modal is closed */}
-      {!modalOpen && (
+      {!loading && !modalOpen && (
         <>
-          <CategoryButtons 
-            buttonData={buttonData} 
+          <CategoryButtons
+            buttonData={buttonData}
             changeCategory={changeCategory}/>
 
-          {/* Filters */}
           <Filters
-            list={list}
+            list={restaurantsFiltered}
             selectedCategory={selectedCategory}
             onFilterChange={setSelectedFilters}
           />
 
-          {/* Header */}
           <div className='category__header'>
             <div className='category__header--title'>{title} ({pageLength})</div>
             <div className='category__header--description'>{description}</div>
           </div>
 
-          {/* Locations */}
           <div className="location__container">
             {pageRestaurants.map((item, key) => (
               <Location
@@ -123,12 +120,10 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
         </>
       )}
 
-      {/* Modal for search results */}
-      {modalOpen && (
+      {!loading && modalOpen && (
         <div className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
 
-            {/* Search bar inside modal */}
             <div className="listing__search-bar" style={{ marginBottom: "1rem" }}>
               <input
                 type="text"

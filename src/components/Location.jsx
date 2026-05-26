@@ -6,15 +6,15 @@ const Location = ({item, setLat, setLon, setZoom}) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
+        if (!item.coordinates) return;
         setLat(item.coordinates[0]);
         setLon(item.coordinates[1]);
         setZoom(17);
-        navigate('/'); // go to map page after setting location
+        navigate('/');
       };
 
-    // Link to neighborhood
     const slugify = (text) =>
-        text
+        (text || '')
             .toLowerCase()
             .trim()
             .replace(/[^a-z0-9]+/g, '-')
@@ -56,15 +56,11 @@ const Location = ({item, setLat, setLon, setZoom}) => {
 
             {/* Desciption */}
             <ul className='location__details--description'>
-                <li className='location__details--description-item'>
-                    {item.description[0]}
-                </li>
-                <li className='location__details--description-item'>
-                    {item.description[1]}
-                </li>
-                <li className='location__details--description-item'>
-                    {item.description[2]}
-                </li>
+                {(item.description || []).map((point, i) => (
+                    <li key={i} className='location__details--description-item'>
+                        {point}
+                    </li>
+                ))}
             </ul>
 
             <div className='location__btn-box'>

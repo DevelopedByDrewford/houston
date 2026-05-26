@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, addDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { db, auth } from '../firebase';
 import '../styles/containers/add-location.css';
 
 const NEIGHBORHOODS = [
@@ -71,6 +74,36 @@ export default function AddLocation() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [copied, setCopied] = useState(false);
+  const [submitState, setSubmitState] = useState('idle'); // idle | loading | success | error
+  const [submitError, setSubmitError] = useState('');
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError('');
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+    } catch (err) {
+      setLoginError('Invalid email or password.');
+    } finally {
+      setLoginLoading(false);
+    }
+  }
 
   const isFood = form.category === 'food';
   const subcategoryOptions = isFood ? FOOD_SUBCATEGORIES : ACTIVITY_SUBCATEGORIES;
@@ -137,6 +170,19 @@ export default function AddLocation() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleSubmit() {
+    setSubmitState('loading');
+    setSubmitError('');
+    try {
+      const obj = buildLocationObject();
+      await addDoc(collection(db, 'locations'), obj);
+      setSubmitState('success');
+    } catch (err) {
+      setSubmitError(err.message);
+      setSubmitState('error');
+    }
+  }
+
   function canAdvance() {
     if (step === 0) return form.name.trim() && form.neighborhood && form.category;
     if (step === 1) return form.img.trim() && form.blurb.trim() && form.bullet1.trim();
@@ -144,11 +190,65 @@ export default function AddLocation() {
     return true;
   }
 
+  if (authLoading) {
+    return <p style={{ textAlign: 'center', padding: '3rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>;
+  }
+
+  if (!user) {
+    return (
+      <div className="add-location">
+        <div className="add-location__header">
+          <h1>Add a Location</h1>
+          <p>Sign in to continue.</p>
+        </div>
+        <form className="add-location__login" onSubmit={handleLogin}>
+          <label className="add-location__label">
+            Email
+            <input
+              className="add-location__input"
+              type="email"
+              value={loginEmail}
+              onChange={e => setLoginEmail(e.target.value)}
+              required
+              autoFocus
+            />
+          </label>
+          <label className="add-location__label">
+            Password
+            <input
+              className="add-location__input"
+              type="password"
+              value={loginPassword}
+              onChange={e => setLoginPassword(e.target.value)}
+              required
+            />
+          </label>
+          {loginError && <p className="add-location__error">{loginError}</p>}
+          <button
+            className="add-location__nav-btn primary"
+            type="submit"
+            disabled={loginLoading}
+          >
+            {loginLoading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="add-location">
       <div className="add-location__header">
         <h1>Add a Location</h1>
-        <p>Fill out each section to generate a location entry.</p>
+        <p>
+          Signed in as {user.email}&nbsp;·&nbsp;
+          <button
+            onClick={() => signOut(auth)}
+            style={{ background: 'none', border: 'none', color: '#E57200', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}
+          >
+            Sign out
+          </button>
+        </p>
       </div>
 
       {/* Stepper */}
@@ -396,12 +496,35 @@ export default function AddLocation() {
 
             <pre className="add-location__preview">{formatOutput()}</pre>
 
-            <button
-              className={`add-location__copy-btn${copied ? ' copied' : ''}`}
-              onClick={handleCopy}
-            >
-              {copied ? 'Copied!' : 'Copy to Clipboard'}
-            </button>
+            <div className="add-location__action-row">
+              <button
+                className={`add-location__copy-btn${copied ? ' copied' : ''}`}
+                onClick={handleCopy}
+              >
+                {copied ? 'Copied!' : 'Copy to Clipboard'}
+              </button>
+
+              <button
+                className={`add-location__submit-btn${submitState === 'success' ? ' success' : ''}`}
+                onClick={handleSubmit}
+                disabled={submitState === 'loading' || submitState === 'success'}
+              >
+                {submitState === 'loading' && 'Saving…'}
+                {submitState === 'success' && 'Saved to Firebase!'}
+                {submitState === 'error' && 'Try Again'}
+                {submitState === 'idle' && 'Save to Firebase'}
+              </button>
+            </div>
+
+            {submitState === 'error' && (
+              <p className="add-location__error">{submitError}</p>
+            )}
+
+            {submitState === 'success' && (
+              <p className="add-location__success">
+                Location saved to Firestore under the <code>locations</code> collection.
+              </p>
+            )}
 
             <div className="add-location__summary">
               <h3>Summary</h3>
@@ -441,7 +564,7 @@ export default function AddLocation() {
         {step === STEPS.length - 1 && (
           <button
             className="add-location__nav-btn reset"
-            onClick={() => { setForm(defaultForm); setStep(0); }}
+            onClick={() => { setForm(defaultForm); setStep(0); setSubmitState('idle'); setSubmitError(''); }}
           >
             Start Over
           </button>
