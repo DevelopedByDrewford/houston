@@ -85,18 +85,20 @@ const Activities = ({ setLat, setLon, setZoom }) => {
       {loading && <p style={{ textAlign: 'center', padding: '2rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>}
 
       {!loading && !modalOpen && (
-        <div className="listing__search-bar">
-          <input
-            type="text"
-            placeholder="Search All"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              if (!modalOpen && e.target.value.trim() !== "") {
-                setModalOpen(true);
-              }
-            }}
-          />
+        <div className="listing__search-section">
+          <div className="listing__search-bar">
+            <input
+              type="text"
+              placeholder="Search All"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (!modalOpen && e.target.value.trim() !== "") {
+                  setModalOpen(true);
+                }
+              }}
+            />
+          </div>
         </div>
       )}
 
