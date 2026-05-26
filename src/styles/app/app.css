@@ -137,7 +137,7 @@ html, body {
     }
 
     .navigation__wordmark {
-        font-size: 0.95rem;
+        display: none;
     }
 
     .navigation__links a {
