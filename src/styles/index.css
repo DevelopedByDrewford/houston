@@ -1,44 +1,33 @@
-@font-face {
-    font-family: "Avenir Next Condensed Bold";
-    src: url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.eot");
-    src: url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.eot?#iefix")format("embedded-opentype"),
-    url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.woff2")format("woff2"),
-    url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.woff")format("woff"),
-    url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.ttf")format("truetype"),
-    url("https://db.onlinewebfonts.com/t/2919517cb534a742df4474836ca67452.svg#Avenir Next Condensed Bold")format("svg");
-}
+/* === Editorial type system: Newsreader + Geist + JetBrains Mono === */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-@font-face {
-    font-family: 'Canto'; /* Name the font family */
-    src: url('../fonts/canto-roman.woff') format('woff'); /* Path to the WOFF file */
-
-    font-style: normal;
-    font-display: swap; /* Ensures text is visible while the font loads */
-}
-
-/* Header - 'Lacquer'; */
-@import url('https://fonts.googleapis.com/css2?family=Lacquer&display=swap');
-
-/* Weather Widget - 'Rancher'; */
-@import url('https://fonts.googleapis.com/css2?family=Ranchers&display=swap');
-
-/* Neighborhood Names */
+/* Legacy fonts — kept for non-home pages */
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
-
-/* Creator Handles on Resources / More page */
 @import url('https://fonts.googleapis.com/css2?family=Annie+Use+Your+Telescope&display=swap');
 
-/* Footer - 'Berkshire Swash'; */
-@import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap');
+@font-face {
+    font-family: 'Canto';
+    src: url('../fonts/canto-roman.woff') format('woff');
+    font-style: normal;
+    font-display: swap;
+}
 
 :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --font-primary: 'Avenir Next Condensed', sans-serif;
-    --font-secondary: 'Canto', serif;
-
+    /* Legacy vars kept for non-home pages */
     --darkblue: #002147;
     --orange: #E57200;
+    --font-primary: 'Geist', 'Inter', system-ui, sans-serif;
+    --font-secondary: 'Newsreader', Georgia, serif;
+
+    /* Editorial design tokens */
+    --ink:    #1a2238;
+    --paper:  #f4ede0;
+    --accent: #d65a1f;
+    --serif:  'Newsreader', 'Source Serif Pro', Georgia, serif;
+    --sans:   'Geist', 'Inter', system-ui, sans-serif;
+    --mono:   'JetBrains Mono', ui-monospace, monospace;
+    --max-w:  1240px;
+    --nav-h:  60px;
 }
 
 *,
@@ -46,16 +35,23 @@
 *::after {
     margin: 0px;
     padding: 0px;
-    box-sizing: inherit;
+    box-sizing: border-box;
 }
 
-
-/* Listing Page Backgrounds */
-.restaurant-listing {
-    /* background-color: #666666;
-    position: relative;
-    z-index: -3; */
+body {
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
+img { display: block; }
 
+::selection {
+    background: var(--accent);
+    color: #fff;
+}
 
+html {
+    scrollbar-width: thin;
+}

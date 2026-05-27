@@ -1,43 +1,70 @@
+/* ── Footer ─────────────────────────────────────────────── */
+
 .footer {
-    height: 10rem;
+    background: var(--ink);
+    color: var(--paper);
+    margin-top: 24px;
+}
+
+.footer__inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 56px 32px 32px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 32px;
+}
+
+.footer__brand {
+    /* brand column takes full width on mobile */
+}
+
+.footer a:hover {
+    opacity: 1 !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.footer__bottom {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 20px 32px 28px;
+    border-top: 1px solid rgba(241, 234, 217, 0.12);
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    flex-direction: column;
-    background-color: black;
-    color: white;
-    border-top: 1px solid white;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.5;
 }
 
-.footer a {
-    color: white;
-    text-decoration: none;
+/* ── Responsive ────────────────────────────────────────── */
+
+@media (max-width: 800px) {
+    .footer__inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 28px 24px;
+    }
+
+    .footer__brand {
+        grid-column: 1 / -1;
+    }
 }
 
-.footer__acknowledgements p {
-    text-align: center;
-    font-family: 'Avenir Next Condensed', sans-serif;
-}
+@media (max-width: 480px) {
+    .footer__inner {
+        grid-template-columns: 1fr;
+        padding: 40px 20px 28px;
+    }
 
-.footer__art-credit {
-    display: block;
-    margin-bottom: .25rem;
-        font-family: 'Avenir Next Condensed', sans-serif;
-}
-
-.footer__line {
-    display: block;
-    border-bottom: 1px solid white;
-    width: 300px;
-    text-align: center;
-    margin: .5rem auto;
-}
-
-.footer__signature {
-    color: white;
-    text-decoration: none;
-}
-
-.footer__author {
-    font-family: 'Berkshire Swash';
+    .footer__bottom {
+        padding: 16px 20px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
 }

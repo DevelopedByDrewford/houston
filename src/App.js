@@ -47,17 +47,7 @@ function App() {
             <Routes>
               <Route
                 path="/"
-                element={
-                  <Home
-                    lat={lat}
-                    setLat={setLat}
-                    lon={lon}
-                    setLon={setLon}
-                    zoom={zoom}
-                    setZoom={setZoom}
-                    key={lat}
-                  />
-                }
+                element={<Home />}
               />
               <Route
                 path="/location/:slug"
