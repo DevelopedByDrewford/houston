@@ -156,7 +156,7 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
         </div>
         <div className="listing-hero__content">
           <h1 className="listing-hero__title">
-            The Food <em>Index</em>
+            Things to <em>Eat</em>
           </h1>
           <p className="listing-hero__copy">
             A long index of restaurants, cafés, bakeries, and bars worth your time.
