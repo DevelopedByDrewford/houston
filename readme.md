@@ -7,7 +7,9 @@ Static website designed to share my favorite places in Houston, Texas.
 Hosted @ https://houston.drewford.dev
 
 Using React, Leaflet, CSS, & Slugify
+
 Firebase Database, Auth, & API
+
 
 Homepage artwork by Jim Koehn
 
