@@ -35,7 +35,7 @@ const Navigation = ({ setLat, setLon, setZoom }) => {
         <LogoMark size={28} />
         <div className="navigation__brand-text">
           <span className="navigation__wordmark">The Houston Guide</span>
-          <span className="navigation__tagline">Est. 2024 · Curated by Drew</span>
+          <span className="navigation__tagline">Est. 2025 · Curated by Drew</span>
         </div>
       </Link>
 

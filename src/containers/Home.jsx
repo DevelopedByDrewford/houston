@@ -265,6 +265,15 @@ function FeaturedCard({ spot }) {
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
+const today = new Date();
+const formattedDate = today.toLocaleDateString('en-US', { month: 'long' }) + ', ' + today.getFullYear();
+// Volume = current year - launch year + 1 (since we start at Vol. 01, not Vol. 00)
+const volume = new Date().getFullYear() - 2025 + 1;
+const formattedVolume = String(volume).padStart(2, '0');
+// Issue = current month (1-12), resetting to 01 in January of each year, so it always reflects the month number within the current volume
+const issue = new Date().getMonth() + 1;
+
+
 function HeroEditorial({ totalSpots, featuredSpot }) {
   return (
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 40px' }}>
@@ -272,9 +281,9 @@ function HeroEditorial({ totalSpots, featuredSpot }) {
         {/* Left: headline */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-            <MonoLabel>Vol. 03 · Issue 11</MonoLabel>
+            <MonoLabel>Vol. {formattedVolume} · Issue {issue}</MonoLabel>
             <span style={{ width: 24, height: 1, background: 'var(--ink)', opacity: 0.25, display: 'block' }}/>
-            <MonoLabel muted>May, 2026</MonoLabel>
+            <MonoLabel muted>{formattedDate}</MonoLabel>
           </div>
 
           <h1 style={{
