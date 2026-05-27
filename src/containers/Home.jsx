@@ -568,9 +568,9 @@ function FoodSection({ foodSpots }) {
 
       <div className="home-food-grid" style={{ marginTop: 36 }}>
         {/* Spot cards */}
-        <div className="home-spotcards-grid">
+        <div className="home-spotcards-grid" key={activeCat}>
           {shown.length > 0
-            ? shown.map((s, i) => <SpotCard key={s.name || i} spot={s} index={i} />)
+            ? shown.map((s, i) => <SpotCard key={s.id || s.name || i} spot={s} index={i} />)
             : [...Array(4)].map((_, i) => (
                 <div key={i} style={{
                   aspectRatio: '4/3', background: 'rgba(26,34,56,0.07)',
