@@ -90,7 +90,7 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 import badges from "../data/badges.js"; // Array of { name, img }
 
-const Filters = ({ list, selectedCategory, onFilterChange }) => {
+const Filters = ({ list, selectedCategory, onFilterChange, compact }) => {
   const filteredList = list[selectedCategory] || [];
 
   const [selectedFilters, setSelectedFilters] = useState({});
@@ -152,6 +152,23 @@ const Filters = ({ list, selectedCategory, onFilterChange }) => {
 
   if (activeBadges.length === 0) {
     return null;
+  }
+
+  if (compact) {
+    return (
+      <div className="filters-inline">
+        {activeBadges.map((badge) => (
+          <label className="filter-chip" key={badge.name}>
+            <input
+              type="checkbox"
+              checked={selectedFilters[badge.name] || false}
+              onChange={() => handleFilterChange(badge.name)}
+            />
+            <span>{badge.name !== "open late" ? badge.name : "open late"}</span>
+          </label>
+        ))}
+      </div>
+    );
   }
 
   return (

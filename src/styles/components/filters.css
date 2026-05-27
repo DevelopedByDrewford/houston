@@ -1,178 +1,227 @@
-/* Category Btns & Filters */
-/* ----------------------- */
-
-/* Category Buttons */
+/* ── Category button strip ─────────────────────────────── */
 .category-slider-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  margin: 0 1rem;
+  margin: 0;
 }
 
 .scroll-container {
   overflow-x: auto;
   white-space: nowrap;
   display: flex;
-  /* gap: 1rem; */
-  padding: 0 2rem;
+  gap: 8px;
+  padding: 4px 2px;
   scroll-behavior: smooth;
 }
 
 .scroll-btn {
-    background: rgba(0, 33, 71, 0.6);
-    border: none;
-    font-size: 1.5rem;
-    padding: 0.5rem;
-    cursor: pointer;
-    position: absolute;
-    z-index: 1;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background: transparent;
+  border: 1px solid rgba(26, 34, 56, 0.13);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--ink);
+  transition: background 0.2s;
+}
+
+.scroll-btn:hover {
+  background: rgba(26, 34, 56, 0.06);
 }
 
 .scroll-btn svg {
-    color: white;
+  color: var(--ink);
 }
 
-.scroll-btn.left {
-  left: 0;
-}
+.scroll-btn.left { margin-right: 4px; }
+.scroll-btn.right { margin-left: 4px; }
 
-.scroll-btn.right {
-  right: 0;
-}
+.scroll-container::-webkit-scrollbar { display: none; }
 
-.scroll-container::-webkit-scrollbar {
-  display: none; /* hide scrollbar */
-}
-
-.category-btn__box {
-    /* display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    contain: layout paint; */
-} 
-
-.category-btn__box:nth-of-type(3) {
-    margin-top: 1rem;
-    margin-left: .5rem;
-    margin-right: .5rem;
-    width: calc(100% - 1rem);
-}
+/* ── Category pills (new pill design) ─────────────────── */
+.category-btn__box { /* flex container, gap set on scroll-container */ }
 
 .category-btn,
 .category-btn:focus,
 .category-btn:active,
 .category-btn:visited {
-    display: flex;
-    flex-direction: column;
-    min-width: 100px;
-    max-width: 100px;
-    height: 60px;
-    justify-content: center;
-    align-items: center;
-    gap: 0.25em;
-    cursor: pointer;
-    font-family: 'Avenir Next Condensed', sans-serif;
-    letter-spacing: 0.05em;
-    background: none;
-    border: none;
-    outline: none;
-    color: inherit;
-    text-decoration: none;
-    text-transform: uppercase;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px 7px 7px;
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid rgba(26, 34, 56, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  outline: none;
 }
 
+.category-btn--active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.category-btn:hover:not(.category-btn--active) {
+  background: rgba(26, 34, 56, 0.06);
+}
+
+.category-btn__thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #333;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.category-btn__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-height: unset;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Override legacy hover animation from old design */
 .category-btn:hover img {
-    transform: rotate(-15deg) scale(1.2);
-    transition: transform 0.2s ease-in-out;
+  transform: none !important;
 }
 
-.category-btn img {
-    max-height: 25px;
+.category-btn__label { /* inherits from button */ }
+
+.category-btn__count {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.55;
+  letter-spacing: 0.1em;
 }
 
-.filters {
-    margin-top: 1rem;
-    padding-left: 1rem;
+/* ── Inline filter chips (toolbar compact mode) ─────────── */
+.filters-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  padding: 8px 0;
 }
 
-/* Filters */
-.filter {
-    display: inline-block;
-    margin-right: .3rem;
-    min-width: fit-content;
+.filter-chip {
+  display: inline-block;
+  cursor: pointer;
 }
 
-/* Hide checkbox */
-.filter input[type="checkbox"] {
-    display: none;
+.filter-chip input[type="checkbox"] {
+  display: none;
 }
 
-.filter span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0.5rem 1rem;
-    background-color: #DBDBDB;
-    color: black;
-    font-family: 'Avenir Next Condensed', sans-serif;
-    text-transform: capitalize;
-    border-radius: 1rem;
-    cursor: pointer;
-    transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+.filter-chip span {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 5px 10px;
+  border: 1px solid rgba(26, 34, 56, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  white-space: nowrap;
 }
 
-/* hover */
-.filter:hover span{
-    background-color: #C1C1C1;
+.filter-chip:hover span {
+  background: rgba(26, 34, 56, 0.06);
 }
 
-.filter:hover img{
-    transform: rotate(-10deg) scale(1.1);
-    transition: transform 0.2s ease-in-out;
+.filter-chip input[type="checkbox"]:checked + span {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
-/* Checked state */
-.filter input[type="checkbox"]:checked + span {
-    background-color: #959595;
+/* ── Legacy scrollable filters (non-compact mode) ────────── */
+.category-slider-wrapper.filters {
+  margin: 4px 0;
 }
 
-/* Image styling */
-.filter img {
-    max-height: 25px;
+.filters .filter {
+  display: inline-block;
+  margin-right: 0;
+  min-width: fit-content;
 }
 
-/* Hide text for image-only labels like "Open Late" */
-.filter .text {
-    font-size: 0.9em;
-    color: inherit;
-    background-color: inherit;
-    border: none;
+.filters .filter input[type="checkbox"] {
+  display: none;
 }
 
-/* Mobile */
+.filters .filter span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 5px 11px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border: 1px solid rgba(26, 34, 56, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.filters .filter span img {
+  max-height: 20px;
+}
+
+.filters .filter:hover span {
+  background: rgba(26, 34, 56, 0.06);
+}
+
+.filters .filter:hover img {
+  transform: none;
+}
+
+.filters .filter input[type="checkbox"]:checked + span {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Mobile ────────────────────────────────────────────── */
 @media (max-width: 600px) {
-    .category-slider-wrapper {
-        margin: 0;
-    }
+  .scroll-btn {
+    display: none;
+  }
 
-    .scroll-btn {
-        display: none;
-    }
+  .filters-inline {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 
-    .scroll-container {
-        padding: 0;
-    }
-
-    .category-btn__box {
-        flex-wrap: nowrap;
-        overflow: scroll;
-        -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
-        scroll-behavior: smooth;
-    }
+  .filters-inline::-webkit-scrollbar { display: none; }
 }
