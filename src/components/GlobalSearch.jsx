@@ -102,13 +102,14 @@ const KEYWORD_PATHS    = new Map();
   });
 })();
 
-// Parse "X in Y" — returns null if keyword isn't recognized (falls back to regular search)
+// Parse "X in Y" or "X near Y" — returns null if keyword isn't recognized (falls back to regular search)
 const parseChain = (query) => {
-  const m = query.match(/^(.+?)\s+in\s*(.*)$/i);
+  const m = query.match(/^(.+?)\s+(in|near)\s*(.*)$/i);
   if (!m) return null;
 
-  const keywordRaw = m[1].trim().toLowerCase();
-  const neighborhoodRaw = m[2].trim().toLowerCase();
+  const keywordRaw     = m[1].trim().toLowerCase();
+  const separator      = m[2].toLowerCase();
+  const neighborhoodRaw = m[3].trim().toLowerCase();
   if (!keywordRaw) return null;
 
   // Require at least a partial keyword match to enter chain mode
@@ -137,6 +138,8 @@ const parseChain = (query) => {
   return {
     keywordRaw,
     neighborhoodRaw,
+    separator,
+    type:            separator,
     matcher,
     matchedKeyword,
     keywordPath:     KEYWORD_PATHS.get(matchedKeyword) || null,
@@ -236,30 +239,51 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
   // Chain mode — activated when keyword is recognized; null otherwise (regular search)
   const chain = useMemo(() => {
-    if (!query.toLowerCase().includes(' in')) return null;
+    const q = query.toLowerCase();
+    if (!q.includes(' in') && !q.includes(' near')) return null;
     return parseChain(query);
   }, [query]);
 
-  const chainResults = useMemo(() => {
-    if (!chain?.isComplete) return [];
+  const chainData = useMemo(() => {
+    const empty = { items: [], primaryCount: 0, nearbyCount: 0, nearbyStart: 0 };
+    if (!chain?.isComplete) return empty;
     const n = chain.matchedNeighborhood;
-    const locs = locations
+
+    const toResult = (loc, neighborhood) => {
+      const cat = chain.isBroadKeyword ? getLocCategory(loc) : null;
+      return {
+        label:    loc.name,
+        sublabel: [cat, neighborhood].filter(Boolean).join(' · '),
+        path:     `/location/${generateLocationSlug(loc)}`,
+      };
+    };
+
+    const primaryLocs = locations
       .filter(loc => loc.name && chain.matcher(loc) && loc.neighborhood === n.name)
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-      .map(loc => {
-        const cat = chain.isBroadKeyword ? getLocCategory(loc) : null;
-        return {
-          label:    loc.name,
-          sublabel: [cat, n.name].filter(Boolean).join(' · '),
-          path:     `/location/${generateLocationSlug(loc)}`,
-        };
-      });
-    locs.push({
-      label:    n.name,
-      sublabel: 'Neighborhood',
-      path:     `/neighborhoods/${slugify(n.name)}`,
-    });
-    return locs;
+      .map(loc => toResult(loc, n.name));
+
+    let nearbyLocs = [];
+    if (chain.type === 'near' && n.nearby?.length > 0) {
+      const nearbySet = new Set(n.nearby);
+      nearbyLocs = locations
+        .filter(loc => loc.name && chain.matcher(loc) && nearbySet.has(loc.neighborhood))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map(loc => toResult(loc, loc.neighborhood));
+    }
+
+    const items = [
+      ...primaryLocs,
+      ...nearbyLocs,
+      { label: n.name, sublabel: 'Neighborhood', path: `/neighborhoods/${slugify(n.name)}` },
+    ];
+
+    return {
+      items,
+      primaryCount: primaryLocs.length,
+      nearbyCount:  nearbyLocs.length,
+      nearbyStart:  primaryLocs.length,
+    };
   }, [chain, locations]);
 
   const results = useMemo(() => {
@@ -286,7 +310,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
   // Fallback nav list when chain resolves but finds no locations
   const chainFallbackList = useMemo(() => {
-    if (!chain?.isComplete || chainResults.length > 1) return null;
+    if (!chain?.isComplete || chainData.items.length > 1) return null;
     const items = [];
     if (chain.keywordPath) {
       items.push({ label: `View all ${capitalize(chain.matchedKeyword)}`, path: chain.keywordPath });
@@ -296,10 +320,10 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       path:  `/neighborhoods/${slugify(chain.matchedNeighborhood.name)}`,
     });
     return items;
-  }, [chain, chainResults]);
+  }, [chain, chainData]);
 
   // Unified list for keyboard nav
-  const activeList = chainFallbackList ?? (chain ? chainResults : visibleResults);
+  const activeList = chainFallbackList ?? (chain ? chainData.items : visibleResults);
 
   useEffect(() => {
     if (isOpen) {
@@ -373,22 +397,28 @@ const GlobalSearch = ({ isOpen, onClose }) => {
               <span className="gsearch-chain-token">
                 {capitalize(chain.matchedKeyword)}
               </span>
-              <span className="gsearch-chain-sep">in</span>
+              <span className="gsearch-chain-sep">{chain.separator}</span>
               <span className={`gsearch-chain-token${chain.matchedNeighborhood ? '' : ' gsearch-chain-token--dim'}`}>
                 {chain.matchedNeighborhood?.name || chain.neighborhoodRaw || '…'}
               </span>
             </div>
 
             {chain.isComplete ? (
-              chainResults.length > 1 ? (
+              chainData.items.length > 1 ? (
                 <div className="gsearch-results" role="listbox">
                   <div className="gsearch-group">
                     <div className="gsearch-group-label">
-                      {chainResults.length - 1} location{chainResults.length - 1 !== 1 ? 's' : ''}
+                      {chain.type === 'near' && chainData.nearbyCount > 0
+                        ? `${chainData.primaryCount} in ${chain.matchedNeighborhood.name} · ${chainData.nearbyCount} nearby`
+                        : `${chainData.primaryCount + chainData.nearbyCount} location${chainData.primaryCount + chainData.nearbyCount !== 1 ? 's' : ''}`
+                      }
                     </div>
-                    {chainResults.map((r, i) => (
+                    {chainData.items.map((r, i) => (
                       <div key={`chain-${r.path}-${i}`}>
-                        {i === chainResults.length - 1 && <div className="gsearch-divider" />}
+                        {chain.type === 'near' && chainData.nearbyCount > 0 && i === chainData.nearbyStart && (
+                          <div className="gsearch-divider" />
+                        )}
+                        {i === chainData.items.length - 1 && <div className="gsearch-divider" />}
                         <div
                           className={`gsearch-result${i === selected ? ' gsearch-result--active' : ''}`}
                           onClick={() => go(r.path)}
@@ -406,7 +436,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
               ) : (
                 <>
                   <p className="gsearch-empty">
-                    No results for <em>"{capitalize(chain.matchedKeyword)}"</em> in <em>"{chain.matchedNeighborhood.name}"</em>
+                    No results for <em>"{capitalize(chain.matchedKeyword)}"</em> {chain.separator} <em>"{chain.matchedNeighborhood.name}"</em>
                   </p>
                   <div className="gsearch-results" role="listbox">
                     <div className="gsearch-group">
@@ -463,7 +493,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         ) : (
           <div className="gsearch-hint-row">
             <div>Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go</div>
-            <div className="gsearch-hint-chain">try &ldquo;pizza in midtown&rdquo; &nbsp;·&nbsp; &ldquo;things in heights&rdquo;</div>
+            <div className="gsearch-hint-chain">try &ldquo;coffee near montrose&rdquo; &nbsp;·&nbsp; &ldquo;things in downtown&rdquo;</div>
           </div>
         )}
 
