@@ -318,3 +318,17 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
+
+/* ── Chain empty state fallback actions ────────────────── */
+.gsearch-result--action {
+  color: var(--accent);
+}
+
+.gsearch-result--action .gsearch-result__label {
+  color: var(--accent);
+}
+
+.gsearch-result--action-active,
+.gsearch-result--action:hover {
+  background: rgba(214, 90, 31, 0.14);
+}

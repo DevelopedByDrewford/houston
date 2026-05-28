@@ -37,37 +37,39 @@ const RESTAURANT_VALUE_TO_SUBCATEGORY = {
   rice: 'ricebowl', halls: 'hall',
 };
 
-// Build keyword → location-filter map from button data + broad keywords
-const KEYWORD_MATCHERS = (() => {
-  const map = new Map();
+// Build keyword → location-filter map and keyword → route path map from button data
+const KEYWORD_MATCHERS = new Map();
+const KEYWORD_PATHS    = new Map();
 
-  ['food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining'].forEach(k =>
-    map.set(k, loc => loc.category === 'food')
-  );
+(() => {
+  const addFood = (keys, matcher, path) =>
+    keys.forEach(k => { if (!KEYWORD_MATCHERS.has(k)) { KEYWORD_MATCHERS.set(k, matcher); KEYWORD_PATHS.set(k, path); } });
 
-  ['things', 'activities', 'activity'].forEach(k =>
-    map.set(k, loc => loc.category !== 'food')
-  );
+  addFood(['food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining'],
+    loc => loc.category === 'food', '/food');
+
+  addFood(['things', 'activities', 'activity'],
+    loc => loc.category !== 'food', '/activities');
 
   restaurantButtons.forEach(btn => {
     if (btn.value === 'food') return;
-    const sub = RESTAURANT_VALUE_TO_SUBCATEGORY[btn.value] || btn.value;
-    const fn = loc => loc.category === 'food' && loc.subcategory?.includes(sub);
+    const sub  = RESTAURANT_VALUE_TO_SUBCATEGORY[btn.value] || btn.value;
+    const fn   = loc => loc.category === 'food' && loc.subcategory?.includes(sub);
+    const path = `/food?category=${btn.value}`;
     [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
       .filter(Boolean)
-      .forEach(k => { if (!map.has(k)) map.set(k, fn); });
+      .forEach(k => addFood([k], fn, path));
   });
 
   activityButtons.forEach(btn => {
     if (btn.value === 'all') return;
-    const cat = ACTIVITY_VALUE_TO_CATEGORY[btn.value] || btn.value;
-    const fn = loc => loc.category === cat;
+    const cat  = ACTIVITY_VALUE_TO_CATEGORY[btn.value] || btn.value;
+    const fn   = loc => loc.category === cat;
+    const path = `/activities?category=${btn.value}`;
     [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
       .filter(Boolean)
-      .forEach(k => { if (!map.has(k)) map.set(k, fn); });
+      .forEach(k => addFood([k], fn, path));
   });
-
-  return map;
 })();
 
 // Parse "X in Y" — returns null if keyword isn't recognized (falls back to regular search)
@@ -107,6 +109,7 @@ const parseChain = (query) => {
     neighborhoodRaw,
     matcher,
     matchedKeyword,
+    keywordPath: KEYWORD_PATHS.get(matchedKeyword) || null,
     matchedNeighborhood,
     isComplete: !!matchedNeighborhood,
   };
@@ -246,8 +249,22 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                       .filter(g => g.items.length > 0);
   }, [visibleResults]);
 
+  // Fallback nav list when chain resolves but finds no locations
+  const chainFallbackList = useMemo(() => {
+    if (!chain?.isComplete || chainResults.length > 1) return null;
+    const items = [];
+    if (chain.keywordPath) {
+      items.push({ label: `View all ${capitalize(chain.matchedKeyword)}`, path: chain.keywordPath });
+    }
+    items.push({
+      label: `Explore ${chain.matchedNeighborhood.name}`,
+      path:  `/neighborhoods/${slugify(chain.matchedNeighborhood.name)}`,
+    });
+    return items;
+  }, [chain, chainResults]);
+
   // Unified list for keyboard nav
-  const activeList = chain ? chainResults : visibleResults;
+  const activeList = chainFallbackList ?? (chain ? chainResults : visibleResults);
 
   useEffect(() => {
     if (isOpen) {
@@ -352,9 +369,27 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               ) : (
-                <p className="gsearch-empty">
-                  No results for <em>"{capitalize(chain.matchedKeyword)}"</em> in <em>"{chain.matchedNeighborhood.name}"</em>
-                </p>
+                <>
+                  <p className="gsearch-empty">
+                    No results for <em>"{capitalize(chain.matchedKeyword)}"</em> in <em>"{chain.matchedNeighborhood.name}"</em>
+                  </p>
+                  <div className="gsearch-results" role="listbox">
+                    <div className="gsearch-group">
+                      {chainFallbackList.map((r, i) => (
+                        <div
+                          key={`fallback-${i}`}
+                          className={`gsearch-result gsearch-result--action${i === selected ? ' gsearch-result--action-active' : ''}`}
+                          onClick={() => go(r.path)}
+                          onMouseEnter={() => setSelected(i)}
+                          role="option"
+                          aria-selected={i === selected}
+                        >
+                          <span className="gsearch-result__label">{r.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )
             ) : (
               <p className="gsearch-empty">
