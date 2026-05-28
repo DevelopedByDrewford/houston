@@ -27,6 +27,36 @@ const GROUP_LABELS = {
   resource:     'Resources',
 };
 
+// Short display label for each location category / subcategory
+const CATEGORY_SHORT_LABEL = {
+  // Food subcategories
+  bakery: 'Bakery', bbq: 'BBQ', burgers: 'Burgers', burritos: 'Burritos',
+  breakfast: 'Breakfast', chicken: 'Chicken', crawfish: 'Crawfish',
+  dessert: 'Dessert', dumplings: 'Dumplings', hotdogs: 'Hot Dogs',
+  pasta: 'Pasta', pho: 'Pho', pizza: 'Pizza', poke: 'Poke',
+  ramen: 'Ramen', ricebowl: 'Rice Bowl', salads: 'Salads',
+  sandwiches: 'Sandwiches', seafood: 'Seafood', soup: 'Soup',
+  steak: 'Steakhouse', sushi: 'Sushi', tacos: 'Tacos', upscale: 'Upscale',
+  hall: 'Food Hall',
+  // Activity categories
+  bar: 'Bar', books: 'Bookstore', coffee: 'Coffee', daiquiris: 'Daiquiris',
+  market: 'Market', movies: 'Theater', museum: 'Museum',
+  music: 'Music Venue', park: 'Park', photo: 'Photo', attraction: 'Attraction',
+};
+
+// Keywords that cast a wide net — show per-item category in chain results
+const BROAD_KEYWORDS = new Set([
+  'food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining',
+  'things', 'activities', 'activity',
+]);
+
+const getLocCategory = (loc) => {
+  if (loc.category === 'food' && loc.subcategory?.length > 0) {
+    return CATEGORY_SHORT_LABEL[loc.subcategory[0]] || '';
+  }
+  return CATEGORY_SHORT_LABEL[loc.category] || '';
+};
+
 // Activity button values → location category strings
 const ACTIVITY_VALUE_TO_CATEGORY = {
   bars: 'bar', markets: 'market', parks: 'park',
@@ -109,7 +139,8 @@ const parseChain = (query) => {
     neighborhoodRaw,
     matcher,
     matchedKeyword,
-    keywordPath: KEYWORD_PATHS.get(matchedKeyword) || null,
+    keywordPath:     KEYWORD_PATHS.get(matchedKeyword) || null,
+    isBroadKeyword:  BROAD_KEYWORDS.has(matchedKeyword),
     matchedNeighborhood,
     isComplete: !!matchedNeighborhood,
   };
@@ -169,9 +200,10 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
     locations.forEach(loc => {
       if (!loc.name) return;
+      const cat = getLocCategory(loc);
       items.push({
         label:    loc.name,
-        sublabel: loc.neighborhood || '',
+        sublabel: [cat, loc.neighborhood].filter(Boolean).join(' · '),
         type:     'location',
         path:     `/location/${generateLocationSlug(loc)}`,
         hidden:   false,
@@ -214,11 +246,14 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     const locs = locations
       .filter(loc => loc.name && chain.matcher(loc) && loc.neighborhood === n.name)
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-      .map(loc => ({
-        label:    loc.name,
-        sublabel: loc.neighborhood || '',
-        path:     `/location/${generateLocationSlug(loc)}`,
-      }));
+      .map(loc => {
+        const cat = chain.isBroadKeyword ? getLocCategory(loc) : null;
+        return {
+          label:    loc.name,
+          sublabel: [cat, n.name].filter(Boolean).join(' · '),
+          path:     `/location/${generateLocationSlug(loc)}`,
+        };
+      });
     locs.push({
       label:    n.name,
       sublabel: 'Neighborhood',
