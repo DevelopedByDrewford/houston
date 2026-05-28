@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useLocations } from '../contexts/LocationsContext';
@@ -90,6 +90,9 @@ export default function ManageLocations() {
 
   const [search, setSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [deletedIds, setDeletedIds] = useState(new Set());
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleteState, setDeleteState] = useState('idle');
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(null);
@@ -134,7 +137,21 @@ export default function ManageLocations() {
     setSubmitError('');
   }
 
+  async function handleDelete(loc) {
+    setDeleteState('loading');
+    try {
+      await deleteDoc(doc(db, 'locations', loc.id));
+      setDeletedIds(prev => new Set([...prev, loc.id]));
+      setDeleteConfirmId(null);
+    } catch {
+      // leave confirm open so user can retry
+    } finally {
+      setDeleteState('idle');
+    }
+  }
+
   const filteredLocations = [...locations]
+    .filter(loc => !deletedIds.has(loc.id))
     .filter(loc => {
       const q = search.toLowerCase();
       return (
@@ -484,10 +501,38 @@ export default function ManageLocations() {
           <p className="manage-locations__empty">No locations found.</p>
         ) : (
           filteredLocations.map(loc => (
-            <button key={loc.id} className="manage-locations__row" onClick={() => selectLocation(loc)}>
-              <span className="manage-locations__row-name">{loc.name}</span>
-              <span className="manage-locations__row-meta">{loc.category}&nbsp;·&nbsp;{loc.neighborhood}</span>
-            </button>
+            <div key={loc.id} className="manage-locations__row">
+              <button className="manage-locations__row-edit" onClick={() => selectLocation(loc)}>
+                <span className="manage-locations__row-name">{loc.name}</span>
+                <span className="manage-locations__row-meta">{loc.category}&nbsp;·&nbsp;{loc.neighborhood}</span>
+              </button>
+              {deleteConfirmId === loc.id ? (
+                <div className="manage-locations__row-confirm">
+                  <span className="manage-locations__confirm-label">Delete?</span>
+                  <button
+                    className="manage-locations__confirm-yes"
+                    onClick={() => handleDelete(loc)}
+                    disabled={deleteState === 'loading'}
+                  >
+                    {deleteState === 'loading' ? '…' : 'Yes'}
+                  </button>
+                  <button
+                    className="manage-locations__confirm-no"
+                    onClick={() => setDeleteConfirmId(null)}
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="manage-locations__delete-btn"
+                  onClick={() => setDeleteConfirmId(loc.id)}
+                  title="Delete location"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           ))
         )}
       </div>
