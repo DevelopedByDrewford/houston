@@ -25,7 +25,7 @@ const FOOTER_COLS = [
     links: [
       { label: 'How this works',  to: '/' },
       { label: 'Field notes',     to: '/' },
-      { label: 'Submit a spot',   to: '/add-location' },
+      { label: 'Admin',   to: '/manage-locations' },
     ],
   },
   {
