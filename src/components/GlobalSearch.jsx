@@ -18,7 +18,6 @@ const PAGE_ROUTES = [
   { label: 'Resources',     path: '/resources'     },
 ];
 
-// Display order: pages, categories, neighborhoods, locations, resources
 const GROUP_ORDER = ['page', 'category', 'neighborhood', 'location', 'resource'];
 const GROUP_LABELS = {
   page:         'Pages',
@@ -27,6 +26,93 @@ const GROUP_LABELS = {
   location:     'Locations',
   resource:     'Resources',
 };
+
+// Activity button values → location category strings
+const ACTIVITY_VALUE_TO_CATEGORY = {
+  bars: 'bar', markets: 'market', parks: 'park',
+};
+
+// Restaurant button values → subcategory strings (only for mismatches)
+const RESTAURANT_VALUE_TO_SUBCATEGORY = {
+  rice: 'ricebowl', halls: 'hall',
+};
+
+// Build keyword → location-filter map from button data + broad keywords
+const KEYWORD_MATCHERS = (() => {
+  const map = new Map();
+
+  ['food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining'].forEach(k =>
+    map.set(k, loc => loc.category === 'food')
+  );
+
+  ['things', 'activities', 'activity'].forEach(k =>
+    map.set(k, loc => loc.category !== 'food')
+  );
+
+  restaurantButtons.forEach(btn => {
+    if (btn.value === 'food') return;
+    const sub = RESTAURANT_VALUE_TO_SUBCATEGORY[btn.value] || btn.value;
+    const fn = loc => loc.category === 'food' && loc.subcategory?.includes(sub);
+    [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
+      .filter(Boolean)
+      .forEach(k => { if (!map.has(k)) map.set(k, fn); });
+  });
+
+  activityButtons.forEach(btn => {
+    if (btn.value === 'all') return;
+    const cat = ACTIVITY_VALUE_TO_CATEGORY[btn.value] || btn.value;
+    const fn = loc => loc.category === cat;
+    [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
+      .filter(Boolean)
+      .forEach(k => { if (!map.has(k)) map.set(k, fn); });
+  });
+
+  return map;
+})();
+
+// Parse "X in Y" — returns null if keyword isn't recognized (falls back to regular search)
+const parseChain = (query) => {
+  const m = query.match(/^(.+?)\s+in\s*(.*)$/i);
+  if (!m) return null;
+
+  const keywordRaw = m[1].trim().toLowerCase();
+  const neighborhoodRaw = m[2].trim().toLowerCase();
+  if (!keywordRaw) return null;
+
+  // Require at least a partial keyword match to enter chain mode
+  let matcher = KEYWORD_MATCHERS.get(keywordRaw);
+  let matchedKeyword = matcher ? keywordRaw : null;
+
+  if (!matcher && keywordRaw.length >= 2) {
+    for (const [key, fn] of KEYWORD_MATCHERS) {
+      if (key.startsWith(keywordRaw)) {
+        matcher = fn;
+        matchedKeyword = key;
+        break;
+      }
+    }
+  }
+
+  if (!matcher) return null;
+
+  let matchedNeighborhood = null;
+  if (neighborhoodRaw.length >= 1) {
+    matchedNeighborhood =
+      neighborhoodBlurbs.find(n => n.name.toLowerCase().startsWith(neighborhoodRaw)) ||
+      neighborhoodBlurbs.find(n => n.name.toLowerCase().includes(neighborhoodRaw));
+  }
+
+  return {
+    keywordRaw,
+    neighborhoodRaw,
+    matcher,
+    matchedKeyword,
+    matchedNeighborhood,
+    isComplete: !!matchedNeighborhood,
+  };
+};
+
+const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 const GlobalSearch = ({ isOpen, onClose }) => {
   const [query, setQuery]       = useState('');
@@ -38,14 +124,13 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const corpus = useMemo(() => {
     const items = [];
 
-    // Pages first in corpus so they sort to the top
     PAGE_ROUTES.forEach(r => {
       items.push({
-        label:   r.label,
+        label:    r.label,
         sublabel: r.path,
-        type:    'page',
-        path:    r.path,
-        hidden:  false,
+        type:     'page',
+        path:     r.path,
+        hidden:   false,
       });
     });
 
@@ -71,22 +156,22 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
     neighborhoodBlurbs.forEach(n => {
       items.push({
-        label:   n.name,
+        label:    n.name,
         sublabel: '',
-        type:    'neighborhood',
-        path:    `/neighborhoods/${slugify(n.name)}`,
-        hidden:  false,
+        type:     'neighborhood',
+        path:     `/neighborhoods/${slugify(n.name)}`,
+        hidden:   false,
       });
     });
 
     locations.forEach(loc => {
       if (!loc.name) return;
       items.push({
-        label:   loc.name,
+        label:    loc.name,
         sublabel: loc.neighborhood || '',
-        type:    'location',
-        path:    `/location/${generateLocationSlug(loc)}`,
-        hidden:  false,
+        type:     'location',
+        path:     `/location/${generateLocationSlug(loc)}`,
+        hidden:   false,
       });
     });
 
@@ -100,49 +185,57 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     allResources.forEach(r => {
       if (!r.title) return;
       items.push({
-        label:   r.title,
+        label:    r.title,
         sublabel: r.sub,
-        type:    'resource',
-        path:    '/resources',
-        hidden:  false,
+        type:     'resource',
+        path:     '/resources',
+        hidden:   false,
       });
     });
 
-    items.push({
-      label:  'manage',
-      sublabel: '',
-      type:   'manage',
-      path:   '/manage-locations',
-      hidden: true,
-    });
-
-    items.push({
-      label:  'add-location',
-      sublabel: '',
-      type:   'add-location',
-      path:   '/add-location',
-      hidden: true,
-    });
+    items.push({ label: 'manage',       sublabel: '', type: 'manage',       path: '/manage-locations', hidden: true });
+    items.push({ label: 'add-location', sublabel: '', type: 'add-location', path: '/add-location',     hidden: true });
 
     return items;
   }, [locations]);
 
+  // Chain mode — activated when keyword is recognized; null otherwise (regular search)
+  const chain = useMemo(() => {
+    if (!query.toLowerCase().includes(' in')) return null;
+    return parseChain(query);
+  }, [query]);
+
+  const chainResults = useMemo(() => {
+    if (!chain?.isComplete) return [];
+    const n = chain.matchedNeighborhood;
+    const locs = locations
+      .filter(loc => loc.name && chain.matcher(loc) && loc.neighborhood === n.name)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      .map(loc => ({
+        label:    loc.name,
+        sublabel: loc.neighborhood || '',
+        path:     `/location/${generateLocationSlug(loc)}`,
+      }));
+    locs.push({
+      label:    n.name,
+      sublabel: 'Neighborhood',
+      path:     `/neighborhoods/${slugify(n.name)}`,
+    });
+    return locs;
+  }, [chain, locations]);
+
   const results = useMemo(() => {
+    if (chain) return [];
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return corpus.filter(item =>
       item.label.toLowerCase().includes(q) ||
       item.keywords?.some(k => k.toLowerCase().includes(q))
     );
-  }, [query, corpus]);
+  }, [query, corpus, chain]);
 
-  // Flat visible list — used for keyboard navigation indices
-  const visibleResults = useMemo(
-    () => results.filter(r => !r.hidden),
-    [results]
-  );
+  const visibleResults = useMemo(() => results.filter(r => !r.hidden), [results]);
 
-  // Grouped for display, in priority order
   const groups = useMemo(() => {
     const byType = {};
     visibleResults.forEach((r, flatIdx) => {
@@ -152,6 +245,9 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     return GROUP_ORDER.map(type => ({ type, items: byType[type] || [] }))
                       .filter(g => g.items.length > 0);
   }, [visibleResults]);
+
+  // Unified list for keyboard nav
+  const activeList = chain ? chainResults : visibleResults;
 
   useEffect(() => {
     if (isOpen) {
@@ -170,7 +266,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelected(s => Math.min(s + 1, visibleResults.length - 1));
+      setSelected(s => Math.min(s + 1, activeList.length - 1));
       return;
     }
 
@@ -181,9 +277,9 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     }
 
     if (e.key === 'Enter') {
-      if (visibleResults.length > 0) {
-        go(visibleResults[Math.min(selected, visibleResults.length - 1)].path);
-      } else if (results.length > 0 && results[0].hidden) {
+      if (activeList.length > 0) {
+        go(activeList[Math.min(selected, activeList.length - 1)].path);
+      } else if (!chain && results.length > 0 && results[0].hidden) {
         go(results[0].path);
       }
     }
@@ -219,7 +315,56 @@ const GlobalSearch = ({ isOpen, onClose }) => {
           <kbd className="gsearch-esc" onClick={onClose}>ESC</kbd>
         </div>
 
-        {query.trim() ? (
+        {chain ? (
+          <>
+            <div className="gsearch-chain-row">
+              <span className="gsearch-chain-token">
+                {capitalize(chain.matchedKeyword)}
+              </span>
+              <span className="gsearch-chain-sep">in</span>
+              <span className={`gsearch-chain-token${chain.matchedNeighborhood ? '' : ' gsearch-chain-token--dim'}`}>
+                {chain.matchedNeighborhood?.name || chain.neighborhoodRaw || '…'}
+              </span>
+            </div>
+
+            {chain.isComplete ? (
+              chainResults.length > 1 ? (
+                <div className="gsearch-results" role="listbox">
+                  <div className="gsearch-group">
+                    <div className="gsearch-group-label">
+                      {chainResults.length - 1} location{chainResults.length - 1 !== 1 ? 's' : ''}
+                    </div>
+                    {chainResults.map((r, i) => (
+                      <div key={`chain-${r.path}-${i}`}>
+                        {i === chainResults.length - 1 && <div className="gsearch-divider" />}
+                        <div
+                          className={`gsearch-result${i === selected ? ' gsearch-result--active' : ''}`}
+                          onClick={() => go(r.path)}
+                          onMouseEnter={() => setSelected(i)}
+                          role="option"
+                          aria-selected={i === selected}
+                        >
+                          <span className="gsearch-result__label">{r.label}</span>
+                          {r.sublabel && <span className="gsearch-result__sub">{r.sublabel}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="gsearch-empty">
+                  No results for <em>"{capitalize(chain.matchedKeyword)}"</em> in <em>"{chain.matchedNeighborhood.name}"</em>
+                </p>
+              )
+            ) : (
+              <p className="gsearch-empty">
+                {chain.neighborhoodRaw.length === 0
+                  ? 'Type a neighborhood…'
+                  : <>No neighborhood matching <em>"{chain.neighborhoodRaw}"</em></>}
+              </p>
+            )}
+          </>
+        ) : query.trim() ? (
           visibleResults.length > 0 ? (
             <div className="gsearch-results" role="listbox">
               {groups.map((group, gi) => (
@@ -247,7 +392,8 @@ const GlobalSearch = ({ isOpen, onClose }) => {
           )
         ) : (
           <div className="gsearch-hint-row">
-            Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go
+            <div>Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go</div>
+            <div className="gsearch-hint-chain">try &ldquo;pizza in midtown&rdquo; &nbsp;·&nbsp; &ldquo;things in heights&rdquo;</div>
           </div>
         )}
 
