@@ -177,6 +177,7 @@ export default function AddLocation() {
       const obj = buildLocationObject();
       await addDoc(collection(db, 'locations'), obj);
       setSubmitState('success');
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       setSubmitError(err.message);
       setSubmitState('error');
@@ -514,6 +515,7 @@ export default function AddLocation() {
                 {submitState === 'error' && 'Try Again'}
                 {submitState === 'idle' && 'Save to Firebase'}
               </button>
+
             </div>
 
             {submitState === 'error' && (

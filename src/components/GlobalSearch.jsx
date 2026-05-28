@@ -93,6 +93,14 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       hidden: true,
     });
 
+    items.push({
+      label:  'add',
+      sublabel: '',
+      type:   'add',
+      path:   '/add-location',
+      hidden: true,
+    });
+
     return items;
   }, [locations]);
 
