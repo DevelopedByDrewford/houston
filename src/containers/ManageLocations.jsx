@@ -79,7 +79,7 @@ function locationToForm(loc) {
 
 export default function ManageLocations() {
   const navigate = useNavigate();
-  const { locations, loading: locsLoading } = useLocations();
+  const { locations, loading: locsLoading, refresh } = useLocations();
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -99,6 +99,7 @@ export default function ManageLocations() {
   const [copied, setCopied] = useState(false);
   const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState('');
+  const [redirectCountdown, setRedirectCountdown] = useState(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -228,6 +229,18 @@ export default function ManageLocations() {
       const obj = buildLocationObject();
       await updateDoc(doc(db, 'locations', selectedLocation.id), obj);
       setSubmitState('success');
+      refresh();
+      setRedirectCountdown(5);
+      const interval = setInterval(() => {
+        setRedirectCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            clearSelection();
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (err) {
       setSubmitError(err.message);
       setSubmitState('error');
@@ -444,7 +457,18 @@ export default function ManageLocations() {
               </div>
               {submitState === 'error' && <p className="add-location__error">{submitError}</p>}
               {submitState === 'success' && (
-                <p className="add-location__success">Location updated in Firestore.</p>
+                <div className="add-location__success">
+                  <p>Location updated in Firestore.</p>
+                  <p>
+                    Returning to list in {redirectCountdown}s&nbsp;·&nbsp;
+                    <button
+                      onClick={clearSelection}
+                      style={{ background: 'none', border: 'none', color: '#E57200', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}
+                    >
+                      Go now
+                    </button>
+                  </p>
+                </div>
               )}
               <div className="add-location__summary">
                 <h3>Summary</h3>

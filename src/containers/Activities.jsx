@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import CategoryButtons from '../components/CategoryButtons';
 import Filters from '../components/Filters';
@@ -82,9 +83,13 @@ const FilterRail = ({ items }) => {
 
 const Activities = ({ setLat, setLon, setZoom }) => {
   const { locations, loading } = useLocations();
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [title, setTitle] = useState(buttonData[0].title || buttonData[0].label);
-  const [description, setDescription] = useState(buttonData[0].description);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCategory = searchParams.get('category') || 'all';
+  const selectedBtn = buttonData.find(b => b.value === selectedCategory) || buttonData[0];
+  const title = selectedBtn.title || selectedBtn.label;
+  const description = selectedBtn.description;
+
   const [selectedFilters, setSelectedFilters] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -113,9 +118,7 @@ const Activities = ({ setLat, setLon, setZoom }) => {
     const { value } = e.currentTarget;
     const selectedObj = buttonData.find((obj) => obj.value === value);
     if (selectedObj) {
-      setSelectedCategory(value);
-      setTitle(e.currentTarget.name);
-      setDescription(selectedObj.description);
+      setSearchParams({ category: value });
     }
   };
 

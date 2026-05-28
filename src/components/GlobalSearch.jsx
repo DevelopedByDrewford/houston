@@ -4,6 +4,8 @@ import { useLocations } from '../contexts/LocationsContext';
 import neighborhoodBlurbs from '../data/neighborhoods';
 import { events, schedules, community, sports, creators } from '../data/resources';
 import generateLocationSlug from '../utils/slug';
+import restaurantButtons from '../data/restaurant-types';
+import activityButtons from '../data/activity-types';
 
 const slugify = (text) =>
   (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -16,10 +18,11 @@ const PAGE_ROUTES = [
   { label: 'Resources',     path: '/resources'     },
 ];
 
-// Display order: pages first, then neighborhoods, locations, resources
-const GROUP_ORDER = ['page', 'neighborhood', 'location', 'resource'];
+// Display order: pages, categories, neighborhoods, locations, resources
+const GROUP_ORDER = ['page', 'category', 'neighborhood', 'location', 'resource'];
 const GROUP_LABELS = {
   page:         'Pages',
+  category:     'Categories',
   neighborhood: 'Neighborhoods',
   location:     'Locations',
   resource:     'Resources',
@@ -43,6 +46,26 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         type:    'page',
         path:    r.path,
         hidden:  false,
+      });
+    });
+
+    restaurantButtons.forEach(btn => {
+      items.push({
+        label:    btn.title || btn.label,
+        sublabel: 'Food',
+        type:     'category',
+        path:     `/food?category=${btn.value}`,
+        keywords: [btn.value, btn.label],
+      });
+    });
+
+    activityButtons.forEach(btn => {
+      items.push({
+        label:    btn.title || btn.label,
+        sublabel: 'Activities',
+        type:     'category',
+        path:     `/activities?category=${btn.value}`,
+        keywords: [btn.value, btn.label],
       });
     });
 
@@ -107,7 +130,10 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const results = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    return corpus.filter(item => item.label.toLowerCase().includes(q));
+    return corpus.filter(item =>
+      item.label.toLowerCase().includes(q) ||
+      item.keywords?.some(k => k.toLowerCase().includes(q))
+    );
   }, [query, corpus]);
 
   // Flat visible list — used for keyboard navigation indices
