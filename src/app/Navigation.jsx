@@ -18,7 +18,7 @@ const navLinks = [
   { to: '/resources',     label: 'Resources',    end: false },
 ];
 
-const Navigation = ({ setLat, setLon, setZoom }) => {
+const Navigation = ({ setLat, setLon, setZoom, onSearchOpen }) => {
   const resetMap = () => {
     setLat(29.7604);
     setLon(-95.3698);
@@ -53,6 +53,17 @@ const Navigation = ({ setLat, setLon, setZoom }) => {
             {label}
           </NavLink>
         ))}
+        <button
+          className="navigation__search-btn"
+          onClick={onSearchOpen}
+          aria-label="Open search"
+          title="Search (⌘K)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span className="navigation__search-hint">⌘K</span>
+        </button>
       </div>
     </nav>
   );

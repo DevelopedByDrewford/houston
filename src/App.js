@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // App
@@ -26,11 +26,26 @@ import { LocationsProvider } from './contexts/LocationsContext';
 import ScrollToTopReroute from './utils/ScrollToTopReroute';
 import ScrollToTopButton from './utils/ScrollToTopButton';
 
+// Global search
+import GlobalSearch from './components/GlobalSearch';
+
 function App() {
   const [lat, setLat] = useState(29.7604);
   const [lon, setLon] = useState(-95.3698);
   const [zoom, setZoom] = useState(13);
   const scrollRef = useRef();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <LocationsProvider>
@@ -44,7 +59,9 @@ function App() {
             <Navigation
               setLat={setLat}
               setLon={setLon}
-              setZoom={setZoom}/>
+              setZoom={setZoom}
+              onSearchOpen={() => setSearchOpen(true)} />
+            <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
             <Routes>
               <Route
                 path="/"
