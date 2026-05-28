@@ -48,8 +48,6 @@
 .category-btn__box { /* flex container, gap set on scroll-container */ }
 
 .category-btn,
-.category-btn:focus,
-.category-btn:active,
 .category-btn:visited {
   display: inline-flex;
   flex-direction: row;
@@ -73,7 +71,9 @@
   outline: none;
 }
 
-.category-btn--active {
+.category-btn--active,
+.category-btn--active:focus,
+.category-btn--active:active {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
