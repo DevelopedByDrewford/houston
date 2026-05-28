@@ -94,9 +94,9 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     });
 
     items.push({
-      label:  'add',
+      label:  'add-location',
       sublabel: '',
-      type:   'add',
+      type:   'add-location',
       path:   '/add-location',
       hidden: true,
     });
