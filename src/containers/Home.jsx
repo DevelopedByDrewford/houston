@@ -94,7 +94,9 @@ function MapBlock() {
     { x: 50, y: 20, label: 'Northside' },
     { x: 38, y: 53, label: 'Montrose' },
     { x: 47, y: 60, label: 'Midtown' },
-    { x: 60, y: 55, label: 'EaDo' },
+    { x: 55, y: 55, label: 'EaDo' },
+    { x: 62, y:51, label: 'Second Ward' },
+    { x: 60, y: 38, label: 'Fifth Ward' },
     { x: 46, y: 80, label: 'Museum Dist.' },
     { x: 22, y: 60, label: 'River Oaks' },
     { x: 34, y: 74, label: 'Rice Village' },
@@ -722,10 +724,10 @@ const FEATURED_HOODS = [
   { name: 'Montrose',        tag: 'Eat / Drink / Walk' },
   { name: 'Heights',         tag: 'Brunch / Boutique'  },
   { name: 'Midtown',         tag: 'Late Night'          },
-  { name: 'Rice Village',    tag: 'Cafe / Study'        },
   { name: 'Chinatown',       tag: 'Noodles / Hot Pot'  },
   { name: 'Downtown',        tag: 'Bars / Theatre'      },
   { name: 'EaDo',            tag: 'Art / Warehouse'     },
+  { name: 'Second Ward',     tag: 'Tex-Mex / Murals'    },  
   { name: 'Museum District', tag: 'Culture'             },
 ];
 

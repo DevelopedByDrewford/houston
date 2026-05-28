@@ -15,6 +15,7 @@ import Restaurants from './containers/Restaurants';
 import Activities from './containers/Activities';
 import Resources from './containers/Resources';
 import AddLocation from './containers/AddLocation';
+import ManageLocations from './containers/ManageLocations';
 import SeedLocations from './containers/SeedLocations';
 import TestContainer from './containers/TestContainer';
 
@@ -96,6 +97,10 @@ function App() {
               <Route
                 path='/add-location'
                 element={<AddLocation />} />
+
+              <Route
+                path='/manage-locations'
+                element={<ManageLocations />} />
 
               <Route
                 path='/seed'
