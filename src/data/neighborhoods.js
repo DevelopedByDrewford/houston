@@ -355,7 +355,7 @@ const neighborhoodBlurbs = [
     },
     {
         name: 'Second Ward',
-        blurb: "The Second Ward, also known as Segundo Barrio, is a vibrant and culturally rich neighborhood in Houston's East End. This area is renowned for its diverse culinary offerings, reflecting its Mexican-American heritage. Notable establishments include El Tiempo Cantina, known for its Tex-Mex classics, and Moon Tower Inn, offering gourmet hot dogs and a selection of craft beers . For a taste of South American cuisine, Andes Café serves dishes like lomo saltado and hornado, blending flavors from Venezuela, Colombia, and Peru",
+        blurb: "The Second Ward, also known as Segundo Barrio, is a vibrant and culturally rich neighborhood in Houston's East End. This area is renowned for its diverse culinary offerings, reflecting its Mexican-American heritage. Notable establishments include El Tiempo Cantina, known for its Tex-Mex classics, and Moon Tower Inn, offering gourmet hot dogs and a selection of craft beers . For a taste of South American cuisine, Andes Café serves dishes like lomo saltado and hornado, blending flavors from Venezuela, Colombia, and Peru.",
         nearby: ['EaDo', 'Eastwood'],
         icon: GiFactory,
         img: 'https://i.imgur.com/MLSutXx.png',
