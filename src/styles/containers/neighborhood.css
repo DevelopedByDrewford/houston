@@ -669,7 +669,276 @@
   opacity: 0.5;
 }
 
-/* Single neighborhood page (preserved) */
+/* ── Single Neighborhood Page (redesign) ───────────────── */
+
+.nbp-hero {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 52px 32px 24px;
+}
+
+.nbp-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.nbp-hero__back {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.nbp-hero__back:hover { opacity: 0.7; }
+
+.nbp-hero__meta-divider {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.3;
+}
+
+.nbp-hero__region {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.55;
+}
+
+.nbp-hero__content {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+
+.nbp-hero__left {
+  display: flex;
+  flex-direction: column;
+}
+
+.nbp-hero__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(52px, 7vw, 100px);
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  color: var(--ink);
+}
+
+.nbp-hero__tag {
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.nbp-hero__blurb {
+  margin-top: 20px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink);
+  opacity: 0.8;
+  max-width: 560px;
+}
+
+.nbp-hero__count {
+  margin-top: 28px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.nbp-hero__count-num {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.nbp-hero__count-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.5;
+}
+
+.nbp-hero__figure {
+  margin: 0;
+  position: relative;
+  aspect-ratio: 4/5;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #222;
+}
+
+.nbp-hero__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.02);
+  transition: transform 0.6s ease;
+}
+
+.nbp-hero__figure:hover .nbp-hero__img { transform: scale(1.04); }
+
+.nbp-hero__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.38) 100%);
+}
+
+/* ── Spots section ─────────────────────────────────────── */
+
+.nbp-spots {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 40px 32px 56px;
+  border-top: 1px solid rgba(26,34,56,0.13);
+}
+
+.nbp-spots__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.nbp-spots__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.nbp-spots__count {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.45;
+}
+
+/* ── Nearby neighborhoods ──────────────────────────────── */
+
+.nbp-nearby {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 40px 32px 64px;
+  border-top: 1px solid rgba(26,34,56,0.1);
+}
+
+.nbp-nearby__header {
+  margin-bottom: 20px;
+}
+
+.nbp-nearby__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.nbp-nearby__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.nbp-nearby__tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 3/2;
+  overflow: hidden;
+  border-radius: 2px;
+  text-decoration: none;
+  background: #222;
+  color: #fff;
+  transition: outline 0.15s;
+}
+
+.nbp-nearby__tile:hover { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.nbp-nearby__tile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) contrast(1.05);
+  transition: transform 0.6s ease;
+}
+
+.nbp-nearby__tile:hover .nbp-nearby__tile-img { transform: scale(1.05); }
+
+.nbp-nearby__tile-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%);
+}
+
+.nbp-nearby__tile-info {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
+}
+
+.nbp-nearby__tile-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.nbp-nearby__tile-name {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  color: #fff;
+}
+
+/* ── Mobile ────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .nbp-hero__content { grid-template-columns: 1fr; gap: 24px; }
+  .nbp-hero__figure  { aspect-ratio: 16/9; }
+}
+
+@media (max-width: 600px) {
+  .nbp-hero   { padding: 28px 16px 20px; }
+  .nbp-spots  { padding: 28px 16px 40px; }
+  .nbp-nearby { padding: 28px 16px 48px; }
+  .nbp-nearby__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Legacy single neighborhood page (kept as fallback) ── */
 .neighborhood-details-page { min-height: 80svh; }
 
 .neighborhood-details--bg { min-height: 15rem; }

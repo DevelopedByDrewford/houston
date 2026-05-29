@@ -1,111 +1,132 @@
 import { Link, useParams } from 'react-router-dom';
 
-import Location from '../components/Location';
+import SpotCard from '../components/SpotCard';
 import neighborhoodBlurbs from '../data/neighborhoods';
+import { NEIGHBORHOOD_META, REGIONS } from '../data/neighborhood-regions';
 import { useLocations } from '../contexts/LocationsContext';
 
 const slugify = (text) => {
   if (typeof text !== 'string') return '';
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 };
+
+// ── Hero ────────────────────────────────────────────────
+
+const NeighborhoodHero = ({ name, tag, blurb, img, region, spotCount }) => (
+  <section className="nbp-hero">
+    <div className="nbp-hero__meta">
+      <Link to="/atlas" className="nbp-hero__back">← Atlas</Link>
+      <span className="nbp-hero__meta-divider" />
+      {region && <span className="nbp-hero__region">{region.label}</span>}
+    </div>
+    <div className="nbp-hero__content">
+      <div className="nbp-hero__left">
+        <h1 className="nbp-hero__title">{name}</h1>
+        {tag && <div className="nbp-hero__tag">{tag}</div>}
+        {blurb && <p className="nbp-hero__blurb">{blurb}</p>}
+        <div className="nbp-hero__count">
+          <span className="nbp-hero__count-num">{spotCount}</span>
+          <span className="nbp-hero__count-label">spots</span>
+        </div>
+      </div>
+      {img && (
+        <figure className="nbp-hero__figure">
+          <img src={img} alt={name} className="nbp-hero__img" />
+          <div className="nbp-hero__gradient" />
+        </figure>
+      )}
+    </div>
+  </section>
+);
+
+// ── Nearby tile ─────────────────────────────────────────
+
+const NearbyTile = ({ name, img, tag }) => (
+  <Link to={`/atlas/${slugify(name)}`} className="nbp-nearby__tile">
+    <img src={img} alt={name} className="nbp-nearby__tile-img" />
+    <div className="nbp-nearby__tile-gradient" />
+    <div className="nbp-nearby__tile-info">
+      {tag && <div className="nbp-nearby__tile-tag">{tag}</div>}
+      <div className="nbp-nearby__tile-name">{name}</div>
+    </div>
+  </Link>
+);
+
+// ── Page ────────────────────────────────────────────────
 
 const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
   const { slug } = useParams();
   const { locations, loading } = useLocations();
 
   if (loading) {
-    return <p style={{ textAlign: 'center', padding: '3rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>;
+    return <div className="listing-page"><div className="listing-loading">Loading…</div></div>;
   }
 
-  const matched = locations.find(
-    (loc) => slugify(loc.neighborhood) === slug
-  );
+  const matchedLoc = locations.find(loc => slugify(loc.neighborhood) === slug);
+  if (!matchedLoc) {
+    return <div className="listing-page" style={{ padding: '4rem 2rem', fontFamily: 'var(--mono)' }}>Neighborhood not found.</div>;
+  }
 
-  if (!matched) return <div>Neighborhood not found.</div>;
+  const neighborhoodName = matchedLoc.neighborhood;
 
-  const allInNeighborhood = locations
-    .filter((loc) => loc.neighborhood === matched.neighborhood)
+  const allSpots = locations
+    .filter(loc => loc.neighborhood === neighborhoodName)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const blurbObj = neighborhoodBlurbs.find(
-    (item) => item.name === matched.neighborhood
-  );
+  const blurbObj = neighborhoodBlurbs.find(n => n.name === neighborhoodName) || {};
+  const meta = NEIGHBORHOOD_META.find(n => n.name === neighborhoodName) || {};
+  const region = REGIONS.find(r => r.id === meta.region);
 
-  if (!blurbObj) {
-    console.log(matched.neighborhood, 'not found in blurbs data page');
-  }
+  const heroImg = blurbObj.img || meta.img;
+
+  const nearbyWithData = (blurbObj.nearby || []).map(name => {
+    const b = neighborhoodBlurbs.find(n => n.name === name) || {};
+    const m = NEIGHBORHOOD_META.find(n => n.name === name) || {};
+    return { name, img: b.img || m.img, tag: m.tag || '' };
+  }).filter(n => n.img);
 
   return (
-    <div className='neighborhood-details-page'>
-      <div
-        className='neighborhood-details--bg'
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.2)), url(${blurbObj.img})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        <div className='neighborhood-details--header'>
-          <h2 className='neighborhood-details__title'>
-            {matched.neighborhood}&nbsp;
-            {allInNeighborhood.length > 0 && (
-              <span>{allInNeighborhood.length}</span>
-            )}
-          </h2>
+    <div className="listing-page">
+      <NeighborhoodHero
+        name={neighborhoodName}
+        tag={meta.tag}
+        blurb={blurbObj.blurb}
+        img={heroImg}
+        region={region}
+        spotCount={allSpots.length}
+      />
+
+      <section className="nbp-spots">
+        <div className="nbp-spots__header">
+          <span className="nbp-spots__label">All spots in {neighborhoodName}</span>
+          <span className="nbp-spots__count">{allSpots.length} results</span>
         </div>
+        <div className="spot-grid">
+          {allSpots.map((item, i) => (
+            <SpotCard
+              key={item.name}
+              item={item}
+              index={i}
+              setLat={setLat}
+              setLon={setLon}
+              setZoom={setZoom}
+            />
+          ))}
+        </div>
+      </section>
 
-        <p className='neighborhood-details__blurb'>
-          {blurbObj?.blurb?.length && blurbObj.blurb}
-        </p>
-
-        {blurbObj?.nearby?.length > 0 && (
-          <div className='nearby-container'>
-            <div className='neighborhoods__nearby--title'>
-              Nearby Neighborhoods
-            </div>
-            <ul className='neighborhoods neighborhoods__nearby'>
-              {blurbObj.nearby.map((item, key) => {
-                const slug = item.toLowerCase().replace(/\s+/g, '-');
-                const nearbyBlurb = neighborhoodBlurbs.find(
-                  (n) => n.name === item
-                );
-                const Icon = nearbyBlurb?.icon;
-
-                return (
-                  <li className='neighborhood' key={key}>
-                    <Link
-                      to={`/atlas/${slug}`}
-                      style={nearbyBlurb?.img ? { backgroundImage: `url(${nearbyBlurb.img})` } : undefined}
-                    >
-                      <div className="neighborhood__overlay">
-                        {Icon && <Icon />}
-                        <span>{item}</span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+      {nearbyWithData.length > 0 && (
+        <section className="nbp-nearby">
+          <div className="nbp-nearby__header">
+            <span className="nbp-nearby__label">Nearby neighborhoods</span>
           </div>
-        )}
-      </div>
-
-      <div className='location__container'>
-        {allInNeighborhood.map((item, key) => (
-          <Location
-            key={key}
-            item={item}
-            setLat={setLat}
-            setLon={setLon}
-            setZoom={setZoom}
-          />
-        ))}
-      </div>
+          <div className="nbp-nearby__grid">
+            {nearbyWithData.map(n => (
+              <NearbyTile key={n.name} name={n.name} img={n.img} tag={n.tag} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };
