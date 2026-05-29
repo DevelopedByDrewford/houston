@@ -233,6 +233,67 @@
   flex-shrink: 0;
 }
 
+/* ── Copilot-style keyword hint ────────────────────────── */
+.gsearch-copilot-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  border-bottom: 1px solid rgba(244, 237, 224, 0.07);
+  font-family: var(--sans);
+  font-size: 1rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.gsearch-copilot-hint__typed {
+  color: rgba(244, 237, 224, 0.28);
+}
+
+.gsearch-copilot-hint__ghost {
+  color: rgba(244, 237, 224, 0.18);
+  font-style: italic;
+}
+
+.gsearch-copilot-hint__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gsearch-copilot-hint__tab {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  color: rgba(244, 237, 224, 0.28);
+  background: rgba(244, 237, 224, 0.07);
+  border: 1px solid rgba(244, 237, 224, 0.13);
+  border-radius: 3px;
+  padding: 2px 7px;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.gsearch-copilot-hint__alt {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  color: rgba(244, 237, 224, 0.25);
+  background: transparent;
+  border: 1px solid rgba(244, 237, 224, 0.1);
+  border-radius: 3px;
+  padding: 2px 7px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.gsearch-copilot-hint__alt:hover {
+  color: rgba(244, 237, 224, 0.6);
+  border-color: rgba(244, 237, 224, 0.25);
+}
+
 .gsearch-results {
   max-height: 420px;
   overflow-y: auto;

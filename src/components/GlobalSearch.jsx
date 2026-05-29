@@ -46,9 +46,9 @@ const CATEGORY_SHORT_LABEL = {
 };
 
 // Key words (Keep it Fun!!!)
-const foodKeyWords = ['food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining', 'bites', 'grub', 'cuisine', 'eats'];
-const activityKeyWords = ['things', 'activities', 'activity', 'fun', 'stuff to do', 'shenanigans,', 'good times', 'vibes', 'trouble'];
-const drinkKeyWords = ['drinks', 'drink', 'sips', 'beverages', 'libations', 'pours', 'cocktails'];
+const foodKeyWords = ['food', 'eat', 'eating', 'restaurant', 'restaurants', 'dining', 'bites', 'grub', 'cuisine', 'eats', 'calories', 'noms', 'munchies', 'snacks', 'meals', 'dishes', 'flavors', 'cravings'];
+const activityKeyWords = ['things', 'activities', 'activity', 'fun', 'stuff to do', 'shenanigans,', 'good times', 'vibes', 'trouble', 'hands', 'explore', 'escapes'];
+const drinkKeyWords = ['drinks', 'drink', 'sips', 'beverages', 'libations', 'pours', 'cocktails', 'liquids', 'fluids', 'refreshments'];
 
 // Keywords that cast a wide net — show per-item category in chain results
 const BROAD_KEYWORDS = new Set([
@@ -275,6 +275,18 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     return items;
   }, [locations]);
 
+  // Ghost hint — shown when query matches a keyword but hasn't entered chain mode yet
+  const keywordHint = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return null;
+    if (q.includes(' in') || q.includes(' near')) return null;
+    if (KEYWORD_MATCHERS.has(q)) return { matched: q, typed: q };
+    for (const [key] of KEYWORD_MATCHERS) {
+      if (key.startsWith(q) && key.length > q.length) return { matched: key, typed: q };
+    }
+    return null;
+  }, [query]);
+
   // Chain mode — activated when keyword is recognized; null otherwise (regular search)
   const chain = useMemo(() => {
     const q = query.toLowerCase();
@@ -337,15 +349,45 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     };
   }, [chain, locations]);
 
+  // Separator prefix hint — "burgers n" → Tab → "burgers near "
+  const separatorHint = useMemo(() => {
+    if (chain || keywordHint) return null;
+    const q = query.trim();
+    const lastSpace = q.lastIndexOf(' ');
+    if (lastSpace === -1) return null;
+    const before = q.slice(0, lastSpace).toLowerCase();
+    const after  = q.slice(lastSpace + 1).toLowerCase();
+    if (!after || !KEYWORD_MATCHERS.has(before)) return null;
+    if ('near'.startsWith(after) && after !== 'near') return { keyword: before, separator: 'near', typed: after };
+    if ('in'.startsWith(after)   && after !== 'in')   return { keyword: before, separator: 'in',   typed: after };
+    return null;
+  }, [query, chain, keywordHint]);
+
+  // Keyword-everywhere results — same as chain but no neighborhood filter
+  const keywordResults = useMemo(() => {
+    const matched = keywordHint?.matched ?? separatorHint?.keyword ?? null;
+    if (!matched) return [];
+    const matcher = KEYWORD_MATCHERS.get(matched);
+    if (!matcher) return [];
+    return locations
+      .filter(loc => loc.name && matcher(loc))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      .map(loc => ({
+        label:    loc.name,
+        sublabel: [getLocCategory(loc), loc.neighborhood].filter(Boolean).join(' · '),
+        path:     `/location/${generateLocationSlug(loc)}`,
+      }));
+  }, [keywordHint, separatorHint, locations]);
+
   const results = useMemo(() => {
-    if (chain) return [];
+    if (chain || keywordHint || separatorHint) return [];
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return corpus.filter(item =>
       item.label.toLowerCase().includes(q) ||
       item.keywords?.some(k => k.toLowerCase().includes(q))
     );
-  }, [query, corpus, chain]);
+  }, [query, corpus, chain, keywordHint, separatorHint]);
 
   const visibleResults = useMemo(() => results.filter(r => !r.hidden), [results]);
 
@@ -376,8 +418,31 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     return items.length > 0 ? items : null;
   }, [chain, chainData]);
 
+  // Chain ghost — Tab-completable neighborhood suggestion in chain mode
+  const chainGhost = useMemo(() => {
+    if (!chain || chain.isInnerLoop) return null;
+    const { matchedKeyword, separator, neighborhoodRaw, matchedNeighborhood } = chain;
+
+    if (!neighborhoodRaw) {
+      return { typed: '', completed: 'Montrose', fill: `${matchedKeyword} ${separator} Montrose` };
+    }
+
+    if (matchedNeighborhood) {
+      const lowerName = matchedNeighborhood.name.toLowerCase();
+      if (lowerName.startsWith(neighborhoodRaw) && neighborhoodRaw !== lowerName) {
+        return {
+          typed: neighborhoodRaw,
+          completed: matchedNeighborhood.name,
+          fill: `${matchedKeyword} ${separator} ${matchedNeighborhood.name}`,
+        };
+      }
+    }
+
+    return null;
+  }, [chain]);
+
   // Unified list for keyboard nav
-  const activeList = chainFallbackList ?? (chain ? chainData.items : visibleResults);
+  const activeList = chainFallbackList ?? (chain ? chainData.items : (keywordHint || separatorHint) ? keywordResults : visibleResults);
 
   useEffect(() => {
     if (isOpen) {
@@ -398,6 +463,26 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') { onClose(); return; }
+
+    if (e.key === 'Tab') {
+      if (keywordHint && !chain) {
+        e.preventDefault();
+        setQuery(keywordHint.typed !== keywordHint.matched
+          ? keywordHint.matched                  // partial → complete keyword only
+          : keywordHint.matched + ' in ');        // exact → add separator
+        return;
+      }
+      if (separatorHint) {
+        e.preventDefault();
+        setQuery(separatorHint.keyword + ' ' + separatorHint.separator + ' ');
+        return;
+      }
+      if (chainGhost) {
+        e.preventDefault();
+        setQuery(chainGhost.fill);
+        return;
+      }
+    }
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -450,6 +535,41 @@ const GlobalSearch = ({ isOpen, onClose }) => {
           <kbd className="gsearch-esc" onClick={onClose}>ESC</kbd>
         </div>
 
+        {keywordHint && !chain && (
+          <div className="gsearch-copilot-hint">
+            <span className="gsearch-copilot-hint__text">
+              <span className="gsearch-copilot-hint__typed">{keywordHint.typed}</span>
+              <span className="gsearch-copilot-hint__ghost">
+                {keywordHint.typed !== keywordHint.matched
+                  ? keywordHint.matched.slice(keywordHint.typed.length)
+                  : ' in Heights'}
+              </span>
+            </span>
+            {keywordHint.typed !== keywordHint.matched ? (
+              <kbd className="gsearch-copilot-hint__tab">⇥ tab</kbd>
+            ) : (
+              <span className="gsearch-copilot-hint__actions">
+                <kbd className="gsearch-copilot-hint__tab">⇥ in</kbd>
+                <button
+                  className="gsearch-copilot-hint__alt"
+                  onClick={() => setQuery(keywordHint.matched + ' near ')}
+                  tabIndex={-1}
+                >near</button>
+              </span>
+            )}
+          </div>
+        )}
+
+        {separatorHint && (
+          <div className="gsearch-copilot-hint">
+            <span className="gsearch-copilot-hint__text">
+              <span className="gsearch-copilot-hint__typed">{separatorHint.keyword} {separatorHint.typed}</span>
+              <span className="gsearch-copilot-hint__ghost">{separatorHint.separator.slice(separatorHint.typed.length)} </span>
+            </span>
+            <kbd className="gsearch-copilot-hint__tab">⇥ tab</kbd>
+          </div>
+        )}
+
         {chain ? (
           <>
             <div className="gsearch-chain-row">
@@ -461,6 +581,31 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                 {chain.matchedNeighborhood?.name || chain.neighborhoodRaw || '…'}
               </span>
             </div>
+
+            {chainGhost && (
+              <div className="gsearch-copilot-hint">
+                <span className="gsearch-copilot-hint__text">
+                  <span className="gsearch-copilot-hint__typed">
+                    {chain.matchedKeyword} {chain.separator}{chainGhost.typed ? ` ${chainGhost.typed}` : ' '}
+                  </span>
+                  <span className="gsearch-copilot-hint__ghost">
+                    {chainGhost.typed
+                      ? chainGhost.completed.slice(chainGhost.typed.length)
+                      : chainGhost.completed}
+                  </span>
+                </span>
+                <span className="gsearch-copilot-hint__actions">
+                  <kbd className="gsearch-copilot-hint__tab">⇥ tab</kbd>
+                  {!chainGhost.typed && (
+                    <button
+                      className="gsearch-copilot-hint__alt"
+                      onClick={() => setQuery(chain.matchedKeyword + (chain.separator === 'in' ? ' near ' : ' in '))}
+                      tabIndex={-1}
+                    >{chain.separator === 'in' ? 'near' : 'in'}</button>
+                  )}
+                </span>
+              </div>
+            )}
 
             {chain.isComplete ? (
               chainData.items.length > 1 ? (
@@ -516,13 +661,36 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                 </>
               )
             ) : (
-              <p className="gsearch-empty">
-                {chain.neighborhoodRaw.length === 0
-                  ? 'Type a neighborhood…'
-                  : <>No neighborhood matching <em>"{chain.neighborhoodRaw}"</em></>}
-              </p>
+              chain.neighborhoodRaw.length > 0 && (
+                <p className="gsearch-empty">No neighborhood matching <em>"{chain.neighborhoodRaw}"</em></p>
+              )
             )}
           </>
+        ) : (keywordHint || separatorHint) ? (
+          keywordResults.length > 0 ? (
+            <div className="gsearch-results" role="listbox">
+              <div className="gsearch-group">
+                <div className="gsearch-group-label">
+                  {keywordResults.length} location{keywordResults.length !== 1 ? 's' : ''}
+                </div>
+                {keywordResults.map((r, i) => (
+                  <div
+                    key={`kw-${r.path}-${i}`}
+                    className={`gsearch-result${i === selected ? ' gsearch-result--active' : ''}`}
+                    onClick={() => go(r.path)}
+                    onMouseEnter={() => setSelected(i)}
+                    role="option"
+                    aria-selected={i === selected}
+                  >
+                    <span className="gsearch-result__label">{r.label}</span>
+                    {r.sublabel && <span className="gsearch-result__sub">{r.sublabel}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="gsearch-empty">No results for <em>"{query}"</em></p>
+          )
         ) : query.trim() ? (
           visibleResults.length > 0 ? (
             <div className="gsearch-results" role="listbox">
