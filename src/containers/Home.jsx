@@ -545,7 +545,7 @@ function FoodSection({ foodSpots }) {
   return (
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 24px' }}>
       <SectionHeader
-        n="02" title="Eats" sub="Restaurants & bars, by category"
+        n="02" title="Eats" sub="Restaurants by category"
         right={
           <Link to="/eats" style={{ textDecoration: 'none' }}>
             <MonoLabel muted>See all categories →</MonoLabel>
@@ -627,7 +627,16 @@ function ActivitiesSection({ todaysPick, activityCounts }) {
 
   return (
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 24px' }}>
-      <SectionHeader n="03" title="Activities" sub="Looking, listening, loitering" />
+      <SectionHeader
+        n="03"
+        title="Activities"
+        sub="Looking, listening, loitering"
+        right={
+          <Link to="/activities" style={{ textDecoration: 'none' }}>
+            <MonoLabel muted>See all activities →</MonoLabel>
+          </Link>
+        }
+      />
 
       <div className="home-activities-grid" style={{ marginTop: 36 }}>
         {/* Today's pick dark card */}
@@ -743,6 +752,11 @@ function HoodsSection({ neighborhoodCounts }) {
         n="04"
         title="Atlas"
         sub={`${neighborhoodBlurbs.length} corners of the city`}
+        right={
+          <Link to="/atlas" style={{ textDecoration: 'none' }}>
+            <MonoLabel muted>See all neighborhoods →</MonoLabel>
+          </Link>
+        }
       />
 
       <div className="home-hoods-grid" style={{
@@ -784,7 +798,7 @@ function HoodsSection({ neighborhoodCounts }) {
   );
 }
 
-// ─── Field Notes / Community ───────────────────────────────────────────────────
+// ─── Field Notes / Colophon ───────────────────────────────────────────────────
 
 function FieldNotes() {
   return (
@@ -794,7 +808,7 @@ function FieldNotes() {
         paddingTop: 56,
       }}>
         <div>
-          <MonoLabel>§ 05 · Community</MonoLabel>
+          <MonoLabel>§ 05 · Colophon</MonoLabel>
           <h2 style={{
             margin: '14px 0 0',
             fontFamily: 'var(--serif)', fontWeight: 400,
