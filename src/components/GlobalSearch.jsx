@@ -155,6 +155,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const [query, setQuery]       = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef                = useRef(null);
+  const modalRef                = useRef(null);
   const navigate                = useNavigate();
   const { locations }           = useLocations();
 
@@ -335,6 +336,11 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
   useEffect(() => { setSelected(0); }, [query]);
 
+  useEffect(() => {
+    modalRef.current?.querySelector('.gsearch-result--active, .gsearch-result--action-active')
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [selected]);
+
   const go = (path) => { navigate(path); onClose(); };
 
   const handleKeyDown = (e) => {
@@ -371,7 +377,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       aria-modal="true"
       aria-label="Site search"
     >
-      <div className="gsearch-modal" onClick={e => e.stopPropagation()}>
+      <div className="gsearch-modal" ref={modalRef} onClick={e => e.stopPropagation()}>
 
         <div className="gsearch-header">
           <svg className="gsearch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
