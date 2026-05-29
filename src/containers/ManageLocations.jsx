@@ -50,7 +50,7 @@ const ACTIVITY_SUBCATEGORIES = [
 const BADGES = [
   'michelin rated','black owned','open late','NFC mobile payments','drive thru',
   'outdoor seating','vegetarian options','alcohol available','hookah','live music',
-  'DJ','cash only','photogenic','cash only',
+  'DJ','cash only','photogenic','dog friendly',
 ];
 const UNIQUE_BADGES = [...new Set(BADGES)];
 

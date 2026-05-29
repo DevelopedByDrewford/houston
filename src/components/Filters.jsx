@@ -140,7 +140,8 @@ const Filters = ({ list, selectedCategory, onFilterChange, compact }) => {
         };
       }
       return badge;
-    });
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const scrollLeft = () => {
     scrollRef.current?.scrollBy({ left: -400, behavior: "smooth" });

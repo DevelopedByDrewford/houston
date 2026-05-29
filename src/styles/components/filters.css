@@ -84,11 +84,8 @@
 }
 
 .category-btn__thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #333;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -97,7 +94,7 @@
 .category-btn__thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   max-height: unset;
   transform: none !important;
   transition: none !important;

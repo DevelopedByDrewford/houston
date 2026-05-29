@@ -54,8 +54,11 @@ const badges = [
     {
         name: 'photogenic',
         img: 'https://i.imgur.com/nnX11fF.png'
+    },
+    {
+        name: 'dog friendly',
+        img: 'https://cdn-icons-png.flaticon.com/512/12/12638.png'
     }
-    // pet friendly
 ]
 
 export default badges;

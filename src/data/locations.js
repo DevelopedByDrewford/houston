@@ -2211,7 +2211,7 @@ const locations = [
     {
         name: 'Heights Bier Garten',
         category: 'bar',
-        badges: ['open late', 'alcohol available', 'outdoor seating'],
+        badges: ['open late', 'alcohol available', 'outdoor seating', 'dog friendly'],
         coordinates: [29.797314935102868, -95.41030956614523],
         neighborhood: 'Heights',
         img: 'https://i.imgur.com/5IAvJoV.png',
@@ -2745,7 +2745,7 @@ const locations = [
     {
         name: 'Hearsay',
         category: 'bar',
-        badges: ['alcohol available'],
+        badges: ['alcohol available', 'dog friendly'],
         coordinates: [29.732463633934497, -95.42238722635899],
         neighborhood: 'Greenway',
         img: 'https://i.imgur.com/2zPxSNS.png',
@@ -2856,7 +2856,7 @@ const locations = [
         name: 'Brooklyn Cafe',
         category: 'coffee',
         subcategory: ['breakfast', 'bakery'],
-        badges: ['NFC mobile payments'],
+        badges: ['NFC mobile payments', 'dog friendly'],
         coordinates: [30.1678675936134, -95.50326137083863],
         neighborhood: 'The Woodlands',
         img: 'https://i.imgur.com/13SmIaK.png',
@@ -3651,7 +3651,7 @@ const locations = [
     {
         name: 'Market Square Park',
         category: 'park',
-        badges: ['photogenic'],
+        badges: ['photogenic', 'dog friendly'],
         coordinates: [29.76261811690755, -95.36235930384555],
         neighborhood: 'Downtown',
         img: 'https://i.imgur.com/xc886p9.png',
@@ -3693,6 +3693,7 @@ const locations = [
     {
         name: 'Levy Park',
         category: 'park',
+        badges: ['dog friendly'],
         coordinates: [29.732625704956543, -95.42328805641604],
         neighborhood: 'Greenway',
         img: 'https://i.imgur.com/8WwIAuu.png',
@@ -3714,6 +3715,7 @@ const locations = [
     {
         name: 'Midtown Park',
         category: 'park',
+        badges: ['dog friendly'],
         coordinates: [29.743629216217624, -95.37615072468216],
         neighborhood: 'Midtown',
         img: 'https://i.imgur.com/tOTkk3u.jpeg',

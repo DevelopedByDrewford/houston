@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
 import neighborhoodBlurbs from '../data/neighborhoods';
+import badges from '../data/badges';
 import { events, schedules, community, sports, creators } from '../data/resources';
 import generateLocationSlug from '../utils/slug';
 import restaurantButtons from '../data/restaurant-types';
@@ -108,6 +109,24 @@ const KEYWORD_PATHS    = new Map();
     [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
       .filter(Boolean)
       .forEach(k => addFood([k], fn, path));
+  });
+
+  // Badge keywords — filter by badge across all categories
+  badges.forEach(badge => {
+    const key = badge.name.toLowerCase();
+    addFood([key], loc => loc.badges?.includes(badge.name), null);
+    BROAD_KEYWORDS.add(key);
+  });
+
+  // Shorthand aliases for badge filters
+  [
+    ['patio',        loc => loc.badges?.includes('outdoor seating')],
+    ['vegan',        loc => loc.badges?.includes('vegetarian options')],
+    ['late night',   loc => loc.badges?.includes('open late')],
+    ['free parking', loc => !loc.badges?.includes('paid parking')],
+  ].forEach(([key, fn]) => {
+    addFood([key], fn, null);
+    BROAD_KEYWORDS.add(key);
   });
 })();
 
@@ -533,7 +552,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         ) : (
           <div className="gsearch-hint-row">
             <div>Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go</div>
-            <div className="gsearch-hint-chain">try &ldquo;coffee near montrose&rdquo; &nbsp;·&nbsp; &ldquo;things in downtown&rdquo;  &nbsp;·&nbsp; &ldquo;good times in the loop&rdquo;</div>
+            <div className="gsearch-hint-chain">try &ldquo;outdoor seating in heights&rdquo; &nbsp;·&nbsp; &ldquo;open late near downtown&rdquo; &nbsp;·&nbsp; &ldquo;black owned in the loop&rdquo;</div>
           </div>
         )}
 
