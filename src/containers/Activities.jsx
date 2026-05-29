@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import CategoryButtons from '../components/CategoryButtons';
 import Filters from '../components/Filters';
 import Location from '../components/Location';
+import ListRow from '../components/ListRow';
 import SpotCard from '../components/SpotCard';
 
 import buttonData from '../data/activity-types';
@@ -285,31 +286,23 @@ const Activities = ({ setLat, setLon, setZoom }) => {
                 <FilterRail items={allPageItems} />
               </div>
             ) : (
-              <div className="location__container">
-                {pageActivities.map((item, key) => (
-                  <Location
-                    key={key}
-                    item={item}
-                    setLat={setLat}
-                    setLon={setLon}
-                    setZoom={setZoom}
-                  />
+              <ul className="list-view">
+                {pageActivities.map((item, i) => (
+                  <ListRow key={i} item={item} index={i} />
                 ))}
                 {selectedCategory === 'photo' && (
                   <>
-                    <div className='see-more-photos'>Additional Photo Locations</div>
-                    {photoLocations.map((item, key) => (
-                      <Location
-                        key={key}
+                    <li className="list-section-divider">Additional Photo Locations</li>
+                    {photoLocations.map((item, i) => (
+                      <ListRow
+                        key={`photo-${i}`}
                         item={item}
-                        setLat={setLat}
-                        setLon={setLon}
-                        setZoom={setZoom}
+                        index={pageActivities.length + i}
                       />
                     ))}
                   </>
                 )}
-              </div>
+              </ul>
             )}
           </div>
         </>

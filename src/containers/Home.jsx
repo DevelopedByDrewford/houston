@@ -570,17 +570,27 @@ function FoodSection({ foodSpots }) {
 
       <div className="home-food-grid" style={{ marginTop: 36 }}>
         {/* Spot cards */}
-        <div className="home-spotcards-grid" key={activeCat}>
-          {shown.length > 0
-            ? shown.map((s, i) => <SpotCard key={s.id || s.name || i} spot={s} index={i} />)
-            : [...Array(4)].map((_, i) => (
-                <div key={i} style={{
-                  aspectRatio: '4/3', background: 'rgba(26,34,56,0.07)',
-                  borderRadius: 2, animation: 'home-pulse 1.5s ease-in-out infinite',
-                  animationDelay: `${i * 0.15}s`,
-                }}/>
-              ))
-          }
+        <div>
+          <div className="home-spotcards-grid" key={activeCat}>
+            {shown.length > 0
+              ? shown.map((s, i) => <SpotCard key={s.id || s.name || i} spot={s} index={i} />)
+              : [...Array(4)].map((_, i) => (
+                  <div key={i} style={{
+                    aspectRatio: '4/3', background: 'rgba(26,34,56,0.07)',
+                    borderRadius: 2, animation: 'home-pulse 1.5s ease-in-out infinite',
+                    animationDelay: `${i * 0.15}s`,
+                  }}/>
+                ))
+            }
+          </div>
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Link
+              to={activeCat === 'All' ? '/eats' : `/eats?category=${activeCat.toLowerCase()}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <MonoLabel muted>See more {activeCat === 'All' ? 'eats' : activeCat.toLowerCase()} →</MonoLabel>
+            </Link>
+          </div>
         </div>
 
         {/* Map */}
@@ -622,6 +632,7 @@ function ActivitiesSection({ todaysPick, activityCounts }) {
   // Skip the first "All" entry
   const actList = activityTypes.slice(1).map((a, i) => ({
     label: a.title || a.label,
+    value: a.value,
     count: activityCounts[i] || 6,
   }));
 
@@ -703,21 +714,27 @@ function ActivitiesSection({ todaysPick, activityCounts }) {
             borderTop: '1px solid rgba(26,34,56,0.1)',
           }}>
             {actList.map((a, i) => (
-              <li key={a.label} className="home-activity-row" style={{
-                borderBottom: '1px solid rgba(26,34,56,0.08)',
-                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-                padding: '11px 0',
-                fontFamily: 'var(--serif)', fontSize: 19, color: 'var(--ink)', fontWeight: 400,
-                cursor: 'pointer', transition: 'color .18s',
-              }}>
-                <span style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
-                  <RuleNumber n={String(i + 1).padStart(2, '0')} />
-                  {a.label}
-                </span>
-                <span style={{
-                  fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em',
-                  color: 'var(--ink)', opacity: 0.38,
-                }}>{a.count} ›</span>
+              <li key={a.label}>
+                <Link
+                  to={`/activities?category=${a.value}`}
+                  className="home-activity-row"
+                  style={{
+                    borderBottom: '1px solid rgba(26,34,56,0.08)',
+                    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                    padding: '11px 0',
+                    fontFamily: 'var(--serif)', fontSize: 19, color: 'var(--ink)', fontWeight: 400,
+                    textDecoration: 'none', transition: 'color .18s',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+                    <RuleNumber n={String(i + 1).padStart(2, '0')} />
+                    {a.label}
+                  </span>
+                  <span style={{
+                    fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em',
+                    color: 'var(--ink)', opacity: 0.38,
+                  }}>{a.count} ›</span>
+                </Link>
               </li>
             ))}
           </ul>

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import CategoryButtons from '../components/CategoryButtons';
 import Filters from "../components/Filters";
 import Location from "../components/Location";
+import ListRow from "../components/ListRow";
 import SpotCard from "../components/SpotCard";
 
 import buttonData from "../data/restaurant-types";
@@ -253,17 +254,11 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
                 <FilterRail items={pageRestaurants} />
               </div>
             ) : (
-              <div className="location__container">
-                {pageRestaurants.map((item, key) => (
-                  <Location
-                    key={key}
-                    item={item}
-                    setLat={setLat}
-                    setLon={setLon}
-                    setZoom={setZoom}
-                  />
+              <ul className="list-view">
+                {pageRestaurants.map((item, i) => (
+                  <ListRow key={i} item={item} index={i} />
                 ))}
-              </div>
+              </ul>
             )}
           </div>
         </>
