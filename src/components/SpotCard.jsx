@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
+import generateLocationSlug from '../utils/slug';
 
-const slugify = (text) =>
+const slugifyNeighborhood = (text) =>
   (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 const SpotCard = ({ item, index, setLat, setLon, setZoom }) => {
   const catLabel = Array.isArray(item.subcategory)
     ? item.subcategory[0]
     : (item.category || '');
+
+  const locationSlug = generateLocationSlug(item);
 
   const handleMapClick = () => {
     if (!item.coordinates || !setLat) return;
@@ -17,11 +20,9 @@ const SpotCard = ({ item, index, setLat, setLon, setZoom }) => {
 
   return (
     <article className="spot-card">
-      <a
+      <Link
         className="spot-card__img-wrap"
-        href={item.website}
-        target="_blank"
-        rel="noopener noreferrer"
+        to={`/location/${locationSlug}`}
       >
         {item.img && (
           <img className="spot-card__img" src={item.img} alt={item.name} />
@@ -29,23 +30,21 @@ const SpotCard = ({ item, index, setLat, setLon, setZoom }) => {
         {catLabel && (
           <span className="spot-card__category-tag">{catLabel}</span>
         )}
-      </a>
+      </Link>
 
       <div className="spot-card__body">
         <div className="spot-card__header">
-          <a
+          <Link
             className="spot-card__name"
-            href={item.website}
-            target="_blank"
-            rel="noopener noreferrer"
+            to={`/location/${locationSlug}`}
           >
             {item.name}
-          </a>
+          </Link>
           <span className="spot-card__index">№ {String(index + 1).padStart(3, '0')}</span>
         </div>
 
         <Link
-          to={`/neighborhoods/${slugify(item.neighborhood)}`}
+          to={`/atlas/${slugifyNeighborhood(item.neighborhood)}`}
           className="spot-card__neighborhood"
         >
           {item.neighborhood}

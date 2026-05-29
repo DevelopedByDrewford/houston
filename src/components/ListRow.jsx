@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
+import generateLocationSlug from '../utils/slug';
 
-const slugify = (text) =>
+const slugifyNeighborhood = (text) =>
   (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 const ListRow = ({ item, index }) => {
   const catLabel = Array.isArray(item.subcategory)
     ? item.subcategory[0]
     : (item.category || '');
+
+  const locationSlug = generateLocationSlug(item);
 
   return (
     <li className="list-row">
@@ -17,17 +20,15 @@ const ListRow = ({ item, index }) => {
       </div>
 
       <div className="list-row__body">
-        <a
+        <Link
           className="list-row__name"
-          href={item.website}
-          target="_blank"
-          rel="noopener noreferrer"
+          to={`/location/${locationSlug}`}
         >
           {item.name}
-        </a>
+        </Link>
         <div className="list-row__meta">
           <Link
-            to={`/neighborhoods/${slugify(item.neighborhood)}`}
+            to={`/atlas/${slugifyNeighborhood(item.neighborhood)}`}
             className="list-row__neighborhood"
           >
             {item.neighborhood}
