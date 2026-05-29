@@ -12,10 +12,10 @@ const slugify = (text) =>
 
 const PAGE_ROUTES = [
   { label: 'Home',          path: '/'              },
-  { label: 'Food',          path: '/food'          },
+  { label: 'Eats',          path: '/eats'          },
   { label: 'Activities',    path: '/activities'    },
-  { label: 'Neighborhoods', path: '/neighborhoods' },
-  { label: 'Resources',     path: '/resources'     },
+  { label: 'Atlas',         path: '/atlas'         },
+  { label: 'Community',     path: '/community'     },
 ];
 
 const GROUP_ORDER = ['page', 'category', 'neighborhood', 'location', 'resource'];
@@ -82,7 +82,7 @@ const KEYWORD_PATHS    = new Map();
     keys.forEach(k => { if (!KEYWORD_MATCHERS.has(k)) { KEYWORD_MATCHERS.set(k, matcher); KEYWORD_PATHS.set(k, path); } });
 
   addFood(foodKeyWords,
-    loc => loc.category === 'food', '/food');
+    loc => loc.category === 'food', '/eats');
 
   addFood(activityKeyWords,
     loc => loc.category !== 'food', '/activities');
@@ -94,7 +94,7 @@ const KEYWORD_PATHS    = new Map();
     if (btn.value === 'food') return;
     const sub  = RESTAURANT_VALUE_TO_SUBCATEGORY[btn.value] || btn.value;
     const fn   = loc => loc.category === 'food' && loc.subcategory?.includes(sub);
-    const path = `/food?category=${btn.value}`;
+    const path = `/eats?category=${btn.value}`;
     [btn.value, btn.label?.toLowerCase(), btn.title?.toLowerCase()]
       .filter(Boolean)
       .forEach(k => addFood([k], fn, path));
@@ -195,7 +195,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         label:    btn.title || btn.label,
         sublabel: 'Food',
         type:     'category',
-        path:     `/food?category=${btn.value}`,
+        path:     `/eats?category=${btn.value}`,
         keywords: [btn.value, btn.label],
       });
     });
@@ -215,7 +215,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         label:    n.name,
         sublabel: '',
         type:     'neighborhood',
-        path:     `/neighborhoods/${slugify(n.name)}`,
+        path:     `/atlas/${slugify(n.name)}`,
         hidden:   false,
       });
     });
@@ -245,7 +245,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         label:    r.title,
         sublabel: r.sub,
         type:     'resource',
-        path:     '/resources',
+        path:     '/community',
         hidden:   false,
       });
     });
@@ -306,7 +306,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     const items = [
       ...primaryLocs,
       ...nearbyLocs,
-      { label: n.name, sublabel: 'Neighborhood', path: `/neighborhoods/${slugify(n.name)}` },
+      { label: n.name, sublabel: 'Neighborhood', path: `/atlas/${slugify(n.name)}` },
     ];
 
     return {
@@ -351,7 +351,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     if (!chain.isInnerLoop) {
       items.push({
         label: `Explore ${chain.matchedNeighborhood.name}`,
-        path:  `/neighborhoods/${slugify(chain.matchedNeighborhood.name)}`,
+        path:  `/atlas/${slugify(chain.matchedNeighborhood.name)}`,
       });
     }
     return items.length > 0 ? items : null;

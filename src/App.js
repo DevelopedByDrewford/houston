@@ -74,7 +74,7 @@ function App() {
                   setLon={setLon}
                   setZoom={setZoom} />}/>
               <Route
-                path='/food'
+                path='/eats'
                 element={
                   <Restaurants
                     setLat={setLat}
@@ -94,17 +94,17 @@ function App() {
                 }
               />
               <Route
-                path="/neighborhoods"
+                path="/atlas"
                 element={<Neighborhoods />} />
               <Route
-                path="/neighborhoods/:slug"
+                path="/atlas/:slug"
                 element={
                   <NeighborhoodPage
                     setLat={setLat}
                     setLon={setLon}
                     setZoom={setZoom}/>} />
               <Route
-                path="/resources"
+                path="/community"
                 element={<Resources />} />
 
               <Route

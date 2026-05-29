@@ -12,10 +12,10 @@ const LogoMark = ({ size = 28 }) => (
 
 const navLinks = [
   { to: '/',              label: 'Home',         end: true  },
-  { to: '/food',          label: 'Food',         end: false },
+  { to: '/eats',           label: 'Eats',         end: false },
   { to: '/activities',    label: 'Activities',   end: false },
-  { to: '/neighborhoods', label: 'Hoods',        end: false },
-  { to: '/resources',     label: 'Resources',    end: false },
+  { to: '/atlas',         label: 'Atlas',        end: false },
+  { to: '/community',     label: 'Community',    end: false },
 ];
 
 const Navigation = ({ setLat, setLon, setZoom, onSearchOpen }) => {

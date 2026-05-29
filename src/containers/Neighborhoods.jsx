@@ -22,7 +22,7 @@ const CompassMark = ({ size = 28 }) => (
 const NeighborhoodHero = ({ featured, totalCount }) => (
   <section className="nb-hero">
     <div className="nb-hero__meta">
-      <span className="nb-hero__meta-label nb-hero__meta-label--accent">§ 04 · The Atlas</span>
+      <span className="nb-hero__meta-label nb-hero__meta-label--accent">§ 04 · Atlas</span>
       <span className="nb-hero__meta-divider" />
       <span className="nb-hero__meta-label nb-hero__meta-label--dim">{totalCount} corners · 6 regions</span>
     </div>
@@ -172,7 +172,7 @@ const CityMap = ({ neighborhoods }) => {
 // ---------- Photo tile ----------
 
 const PhotoTile = ({ n, i }) => (
-  <Link to={`/neighborhoods/${slugify(n.name)}`} className="nb-tile nb-tile--photo">
+  <Link to={`/atlas/${slugify(n.name)}`} className="nb-tile nb-tile--photo">
     <img src={n.img} alt={n.name} className="nb-tile__img" />
     <div className="nb-tile__gradient" />
     <span className="nb-tile__number">{String(i + 1).padStart(2, '0')}</span>
@@ -187,7 +187,7 @@ const PhotoTile = ({ n, i }) => (
 // ---------- Index tile ----------
 
 const IndexTile = ({ n, i }) => (
-  <Link to={`/neighborhoods/${slugify(n.name)}`} className="nb-tile nb-tile--index">
+  <Link to={`/atlas/${slugify(n.name)}`} className="nb-tile nb-tile--index">
     <div className="nb-tile--index__top">
       <span className="nb-tile--index__number">{String(i + 1).padStart(2, '0')}</span>
       <span className="nb-tile--index__count">{n.count} ›</span>
@@ -249,7 +249,7 @@ const AZDirectory = ({ neighborhoods }) => {
             <ul className="nb-az__list">
               {grouped[L].map(n => (
                 <li key={n.name} className="nb-az__row">
-                  <Link to={`/neighborhoods/${slugify(n.name)}`} className="nb-az__link">{n.name}</Link>
+                  <Link to={`/atlas/${slugify(n.name)}`} className="nb-az__link">{n.name}</Link>
                   <span className="nb-az__count">{String(n.count).padStart(2, '0')}</span>
                 </li>
               ))}

@@ -317,14 +317,14 @@ function HeroEditorial({ totalSpots, featuredSpot }) {
           </p>
 
           <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
-            <Link to="/food" style={{
+            <Link to="/eats" style={{
               display: 'inline-block',
               background: 'var(--ink)', color: 'var(--paper)',
               fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500,
               padding: '13px 20px', borderRadius: 2,
               letterSpacing: '0.03em', textDecoration: 'none',
             }}>Open the index →</Link>
-            <Link to="/neighborhoods" style={{
+            <Link to="/atlas" style={{
               display: 'inline-block',
               background: 'transparent', color: 'var(--ink)',
               border: '1px solid rgba(26,34,56,0.18)',
@@ -394,10 +394,10 @@ function StatsStrip({ totalSpots, totalNeighborhoods, weather }) {
 // ─── Collections ──────────────────────────────────────────────────────────────
 
 const COLLECTIONS = [
-  { id: 'food',        label: 'Food',          blurb: '25 cuisines, breakfast to last-call',   img: 'https://i.imgur.com/yzjy5Ek.png', to: '/food' },
-  { id: 'activities',  label: 'Activities',     blurb: 'Museums, music, parks, photo opps',     img: 'https://i.imgur.com/4CSW5F3.png', to: '/activities' },
-  { id: 'hoods',       label: 'Neighborhoods',  blurb: 'Field notes on every corner',           img: 'https://i.imgur.com/bjzXRJ2.png', to: '/neighborhoods' },
-  { id: 'resources',   label: 'Resources',      blurb: 'Creators and locals worth following',   img: 'https://i.imgur.com/gczEaJs.png', to: '/resources' },
+  { id: 'food',        label: 'Eats',          blurb: '25 cuisines, breakfast to last-call',   img: 'https://i.imgur.com/yzjy5Ek.png', to: '/eats' },
+  { id: 'activities',  label: 'Activities',    blurb: 'Museums, music, parks, photo opps',     img: 'https://i.imgur.com/4CSW5F3.png', to: '/activities' },
+  { id: 'hoods',       label: 'Atlas',         blurb: 'Field notes on every corner',           img: 'https://i.imgur.com/bjzXRJ2.png', to: '/atlas' },
+  { id: 'resources',   label: 'Community',     blurb: 'Creators and locals worth following',   img: 'https://i.imgur.com/gczEaJs.png', to: '/community' },
 ];
 
 function Collections({ foodCount, activityCount }) {
@@ -545,9 +545,9 @@ function FoodSection({ foodSpots }) {
   return (
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 24px' }}>
       <SectionHeader
-        n="02" title="Food" sub="Restaurants & bars, by category"
+        n="02" title="Eats" sub="Restaurants & bars, by category"
         right={
-          <Link to="/food" style={{ textDecoration: 'none' }}>
+          <Link to="/eats" style={{ textDecoration: 'none' }}>
             <MonoLabel muted>See all categories →</MonoLabel>
           </Link>
         }
@@ -595,7 +595,7 @@ function FoodSection({ foodSpots }) {
             fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink)', opacity: 0.55,
           }}>
             <span>Showing {foodSpots.length} places</span>
-            <Link to="/food" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+            <Link to="/eats" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
               Open full map →
             </Link>
           </div>
@@ -627,7 +627,7 @@ function ActivitiesSection({ todaysPick, activityCounts }) {
 
   return (
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 24px' }}>
-      <SectionHeader n="03" title="Things to Do" sub="Looking, listening, loitering" />
+      <SectionHeader n="03" title="Activities" sub="Looking, listening, loitering" />
 
       <div className="home-activities-grid" style={{ marginTop: 36 }}>
         {/* Today's pick dark card */}
@@ -741,7 +741,7 @@ function HoodsSection({ neighborhoodCounts }) {
     <section style={{ maxWidth: 'var(--max-w)', margin: '0 auto', padding: '64px 32px 24px' }}>
       <SectionHeader
         n="04"
-        title="Neighborhoods"
+        title="Atlas"
         sub={`${neighborhoodBlurbs.length} corners of the city`}
       />
 
@@ -751,7 +751,7 @@ function HoodsSection({ neighborhoodCounts }) {
         border: '1px solid rgba(26,34,56,0.1)',
       }}>
         {hoods.map((h, i) => (
-          <Link key={h.name} to="/neighborhoods" className="home-hood-card" style={{
+          <Link key={h.name} to="/atlas" className="home-hood-card" style={{
             background: 'var(--paper)', color: 'var(--ink)', textDecoration: 'none',
             padding: '22px 20px 20px',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -784,7 +784,7 @@ function HoodsSection({ neighborhoodCounts }) {
   );
 }
 
-// ─── Field Notes / Colophon ───────────────────────────────────────────────────
+// ─── Field Notes / Community ───────────────────────────────────────────────────
 
 function FieldNotes() {
   return (
@@ -794,7 +794,7 @@ function FieldNotes() {
         paddingTop: 56,
       }}>
         <div>
-          <MonoLabel>§ 05 · Colophon</MonoLabel>
+          <MonoLabel>§ 05 · Community</MonoLabel>
           <h2 style={{
             margin: '14px 0 0',
             fontFamily: 'var(--serif)', fontWeight: 400,

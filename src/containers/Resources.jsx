@@ -66,7 +66,7 @@ function ResourcesHero({ featured }) {
   return (
     <section className="rs-hero">
       <div className="rs-hero__meta">
-        <span className="rs-hero__meta-label rs-hero__meta-label--accent">§ 05 · The Companions</span>
+        <span className="rs-hero__meta-label rs-hero__meta-label--accent">§ 05 · Community</span>
         <span className="rs-hero__meta-divider" />
         <span className="rs-hero__meta-label rs-hero__meta-label--dim">
           {creators.length} creators · {events.length + schedules.length} calendars

@@ -153,7 +153,7 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
       {/* ── Listing Hero ─────────────────────────────── */}
       <section className="listing-hero">
         <div className="listing-hero__meta">
-          <span className="listing-hero__meta-label listing-hero__meta-label--accent">§ 02 · The Index</span>
+          <span className="listing-hero__meta-label listing-hero__meta-label--accent">§ 02 · Eats</span>
           <span className="listing-hero__meta-divider"/>
           <span className="listing-hero__meta-label listing-hero__meta-label--dim">{totalCount} entries</span>
         </div>

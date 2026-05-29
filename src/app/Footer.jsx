@@ -14,10 +14,10 @@ const FOOTER_COLS = [
   {
     heading: 'Browse',
     links: [
-      { label: 'Food index',      to: '/food' },
+      { label: 'Food index',      to: '/eats' },
       { label: 'Things to do',    to: '/activities' },
-      { label: 'Neighborhoods',   to: '/neighborhoods' },
-      { label: 'Resources',       to: '/resources' },
+      { label: 'Neighborhoods',   to: '/atlas' },
+      { label: 'Resources',       to: '/community' },
     ],
   },
   {

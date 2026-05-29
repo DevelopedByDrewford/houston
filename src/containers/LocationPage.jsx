@@ -20,7 +20,7 @@ const LocationPage = ({ setLat, setLon, setZoom }) => {
 
   const renderLink = () => {
     if (location.category === 'food') {
-      return <Link to="/food" className="see-more-link">See more restaurants</Link>;
+      return <Link to="/eats" className="see-more-link">See more restaurants</Link>;
     }
     return <Link to="/activities" className="see-more-link">See more activities</Link>;
   };
