@@ -6,6 +6,19 @@ import { REGIONS, REGION_COPY, NEIGHBORHOOD_META } from '../data/neighborhood-re
 const slugify = (text) =>
   text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+
+function convertNumberToWords(n) {
+  if (n === 0) return 'zero';
+  if (n < 10) return ones[n];
+  if (n < 20) return teens[n - 10];
+  if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? '-' + ones[n % 10] : '');
+  if (n < 1000) return ones[Math.floor(n / 100)] + ' hundred' + (n % 100 !== 0 ? ' ' + convertNumberToWords(n % 100) : '');
+  return n;
+}
+
 // ---------- Compass SVG ----------
 
 const CompassMark = ({ size = 28 }) => (
@@ -29,7 +42,7 @@ const NeighborhoodHero = ({ featured, totalCount }) => (
     <div className="nb-hero__content">
       <div>
         <h1 className="nb-hero__title">
-          Eighty-eight corners of <em>Houston.</em>
+          {convertNumberToWords(totalCount).charAt(0).toUpperCase() + convertNumberToWords(totalCount).slice(1)} corners of <em>Houston.</em>
         </h1>
         <p className="nb-hero__copy">
           The city is too big to think about whole. So it gets sorted — by drive-time, by

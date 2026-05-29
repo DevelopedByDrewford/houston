@@ -32,7 +32,6 @@ export default function ScrollToTopButton({ targetRef }) {
     >
       {/* ↑ top */}
       <img src='https://i.imgur.com/5Vui63v.png' />
-      &nbsp;top
     </button>
   ) : null;
 }

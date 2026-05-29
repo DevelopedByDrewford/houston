@@ -1,9 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import CategoryButtons from '../components/CategoryButtons';
 import Filters from "../components/Filters";
-import Location from "../components/Location";
 import ListRow from "../components/ListRow";
 import SpotCard from "../components/SpotCard";
 
@@ -96,6 +95,13 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') { setSearchTerm(''); setModalOpen(false); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [modalOpen]);
+
   const restaurantsFiltered = useMemo(
     () => buildRestaurantsFiltered(locations),
     [locations]
@@ -175,21 +181,6 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
 
       {!loading && !modalOpen && (
         <>
-          {/* ── Search ──────────────────────────────── */}
-          <div className="listing__search-section">
-            <div className="listing__search-bar">
-              <input
-                type="text"
-                placeholder="Search All"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  if (e.target.value.trim() !== "") setModalOpen(true);
-                }}
-              />
-            </div>
-          </div>
-
           {/* ── Category Strip ──────────────────────── */}
           <div className="listing-category-strip-wrapper">
             <CategoryButtons
@@ -235,6 +226,21 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
             </div>
           </div>
 
+          {/* ── Search ──────────────────────────────── */}
+          <div className="listing__search-section">
+            <div className="listing__search-bar">
+              <input
+                type="text"
+                placeholder="Search by name, neighborhood, or keyword…"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (e.target.value.trim() !== "") setModalOpen(true);
+                }}
+              />
+            </div>
+          </div>
+
           {/* ── Listing Body ─────────────────────────── */}
           <div className="listing-body">
             {viewMode === 'grid' ? (
@@ -266,41 +272,34 @@ const Restaurants = ({ setLat, setLon, setZoom }) => {
 
       {/* ── Search Modal ─────────────────────────────── */}
       {!loading && modalOpen && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={() => { setSearchTerm(""); setModalOpen(false); }}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="listing__search-bar" style={{ marginBottom: "1rem" }}>
-              <input
-                type="text"
-                placeholder="Search All"
-                value={searchTerm}
-                autoFocus
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="modal-header">
+              <div className="listing__search-bar">
+                <input
+                  type="text"
+                  placeholder="Search by name, neighborhood, or keyword…"
+                  value={searchTerm}
+                  autoFocus
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button className="modal-close" onClick={() => { setSearchTerm(""); setModalOpen(false); }}>
+                esc
+              </button>
             </div>
-            <button className="modal-close" onClick={() => {
-              setSearchTerm("");
-              setModalOpen(false);
-            }}>
-              &times;
-            </button>
-            <h3 className='search-results-found'>Search Results ({pageLength})</h3>
-            <div className="location__container">
-              {pageRestaurants.length > 0 ? (
-                pageRestaurants.map((item, key) => (
-                  <Location
-                    key={key}
-                    item={item}
-                    setLat={setLat}
-                    setLon={setLon}
-                    setZoom={setZoom}
-                  />
-                ))
-              ) : (
-                <p className='no-results-found'>
-                  <img src='https://i.imgur.com/N9iaEmW.png' alt='No Results'/>
-                </p>
-              )}
+            <div className="modal-results-label">
+              {pageLength} result{pageLength !== 1 ? 's' : ''}
             </div>
+            {pageRestaurants.length > 0 ? (
+              <ul className="list-view modal-list-view">
+                {pageRestaurants.map((item, i) => (
+                  <ListRow key={i} item={item} index={i} />
+                ))}
+              </ul>
+            ) : (
+              <p className="modal-no-results">No results for &ldquo;{searchTerm}&rdquo;</p>
+            )}
           </div>
         </div>
       )}

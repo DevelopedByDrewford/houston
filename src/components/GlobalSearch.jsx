@@ -552,7 +552,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         ) : (
           <div className="gsearch-hint-row">
             <div>Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go</div>
-            <div className="gsearch-hint-chain">try &ldquo;outdoor seating in heights&rdquo; &nbsp;·&nbsp; &ldquo;open late near downtown&rdquo; &nbsp;·&nbsp; &ldquo;black owned in the loop&rdquo;</div>
+            <div className="gsearch-hint-chain">try &ldquo;coffee in heights&rdquo; &nbsp;·&nbsp; &ldquo;open late near downtown&rdquo; &nbsp;·&nbsp; &ldquo;vibes in the loop&rdquo;</div>
           </div>
         )}
 
