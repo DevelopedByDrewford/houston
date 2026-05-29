@@ -382,11 +382,17 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const results = useMemo(() => {
     if (chain || keywordHint || separatorHint) return [];
     if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return corpus.filter(item =>
-      item.label.toLowerCase().includes(q) ||
-      item.keywords?.some(k => k.toLowerCase().includes(q))
-    );
+    const raw = query.toLowerCase();
+    const isPageQuery = raw.startsWith('/');
+    const q = isPageQuery ? raw.slice(1) : raw;
+    if (!q) return [];
+    return corpus.filter(item => {
+      if (isPageQuery && item.type !== 'page') return false;
+      return (
+        item.label.toLowerCase().includes(q) ||
+        item.keywords?.some(k => k.toLowerCase().includes(q))
+      );
+    });
   }, [query, corpus, chain, keywordHint, separatorHint]);
 
   const visibleResults = useMemo(() => results.filter(r => !r.hidden), [results]);
