@@ -266,8 +266,7 @@ const AZDirectory = ({ neighborhoods }) => {
 const Neighborhoods = () => {
   const { locations, loading } = useLocations();
   const [activeRegion, setActiveRegion] = useState('all');
-  const [tileStyle, setTileStyle] = useState('photo');
-  const [showAZ, setShowAZ] = useState(true);
+  const [view, setView] = useState('photo');
 
   const countsByNeighborhood = useMemo(() => {
     if (!Array.isArray(locations)) return {};
@@ -312,31 +311,27 @@ const Neighborhoods = () => {
 
       <RegionCopy activeRegion={activeRegion} />
 
-      {activeRegion === 'all' && <CityMap neighborhoods={enrichedNeighborhoods} />}
-
       <div className="nb-view-controls">
         <div className="view-toggle">
           <button
-            className={`view-toggle__btn${tileStyle === 'photo' ? ' view-toggle__btn--active' : ''}`}
-            onClick={() => setTileStyle('photo')}
+            className={`view-toggle__btn${view === 'photo' ? ' view-toggle__btn--active' : ''}`}
+            onClick={() => setView('photo')}
           >Photo</button>
           <button
-            className={`view-toggle__btn${tileStyle === 'index' ? ' view-toggle__btn--active' : ''}`}
-            onClick={() => setTileStyle('index')}
-          >Index</button>
+            className={`view-toggle__btn${view === 'map' ? ' view-toggle__btn--active' : ''}`}
+            onClick={() => setView('map')}
+          >Map</button>
+          <button
+            className={`view-toggle__btn${view === 'az' ? ' view-toggle__btn--active' : ''}`}
+            onClick={() => setView('az')}
+          >A–Z</button>
         </div>
         <span className="listing-toolbar__count">{filtered.length} neighborhoods</span>
-        <button
-          className={`nb-az-toggle${showAZ ? ' nb-az-toggle--active' : ''}`}
-          onClick={() => setShowAZ(v => !v)}
-        >
-          {showAZ ? 'Hide' : 'Show'} A–Z
-        </button>
       </div>
 
-      <NeighborhoodGrid neighborhoods={filtered} tileStyle={tileStyle} />
-
-      {showAZ && <AZDirectory neighborhoods={enrichedNeighborhoods} />}
+      {view === 'photo' && <NeighborhoodGrid neighborhoods={filtered} tileStyle="photo" />}
+      {view === 'map' && <CityMap neighborhoods={enrichedNeighborhoods} />}
+      {view === 'az' && <AZDirectory neighborhoods={enrichedNeighborhoods} />}
     </div>
   );
 };
