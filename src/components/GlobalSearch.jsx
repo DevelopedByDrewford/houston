@@ -468,8 +468,8 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       if (keywordHint && !chain) {
         e.preventDefault();
         setQuery(keywordHint.typed !== keywordHint.matched
-          ? keywordHint.matched                  // partial → complete keyword only
-          : keywordHint.matched + ' in ');        // exact → add separator
+          ? keywordHint.matched                   // partial → complete keyword only
+          : keywordHint.matched + ' near ');      // exact → add separator
         return;
       }
       if (separatorHint) {
@@ -542,19 +542,19 @@ const GlobalSearch = ({ isOpen, onClose }) => {
               <span className="gsearch-copilot-hint__ghost">
                 {keywordHint.typed !== keywordHint.matched
                   ? keywordHint.matched.slice(keywordHint.typed.length)
-                  : ' in Heights'}
+                  : ' near Heights'}
               </span>
             </span>
             {keywordHint.typed !== keywordHint.matched ? (
               <kbd className="gsearch-copilot-hint__tab">⇥ tab</kbd>
             ) : (
               <span className="gsearch-copilot-hint__actions">
-                <kbd className="gsearch-copilot-hint__tab">⇥ in</kbd>
+                <kbd className="gsearch-copilot-hint__tab">⇥ near</kbd>
                 <button
                   className="gsearch-copilot-hint__alt"
-                  onClick={() => setQuery(keywordHint.matched + ' near ')}
+                  onClick={() => setQuery(keywordHint.matched + ' in ')}
                   tabIndex={-1}
-                >near</button>
+                >in</button>
               </span>
             )}
           </div>
