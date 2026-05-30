@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
-import neighborhoodBlurbs from '../data/neighborhoods';
+import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
 import badges from '../data/badges';
 import { events, schedules, community, sports, creators } from '../data/resources';
 import generateLocationSlug from '../utils/slug';
@@ -133,7 +133,7 @@ const KEYWORD_PATHS    = new Map();
 })();
 
 // Parse "X in Y" or "X near Y" — returns null if keyword isn't recognized (falls back to regular search)
-const parseChain = (query) => {
+const parseChain = (query, neighborhoods) => {
   const m = query.match(/^(.+?)\s+(in|near)\s*(.*)$/i);
   if (!m) return null;
 
@@ -173,7 +173,7 @@ const parseChain = (query) => {
   if (
     neighborhoodRaw.length >= 2 &&
     'the loop'.startsWith(neighborhoodRaw) &&
-    !neighborhoodBlurbs.some(n => n.name.toLowerCase().startsWith(neighborhoodRaw))
+    !neighborhoods.some(n => n.name.toLowerCase().startsWith(neighborhoodRaw))
   ) {
     return { ...base, matchedNeighborhood: { name: 'The Loop' }, isInnerLoop: true, isComplete: true };
   }
@@ -181,8 +181,8 @@ const parseChain = (query) => {
   let matchedNeighborhood = null;
   if (neighborhoodRaw.length >= 1) {
     matchedNeighborhood =
-      neighborhoodBlurbs.find(n => n.name.toLowerCase().startsWith(neighborhoodRaw)) ||
-      neighborhoodBlurbs.find(n => n.name.toLowerCase().includes(neighborhoodRaw));
+      neighborhoods.find(n => n.name.toLowerCase().startsWith(neighborhoodRaw)) ||
+      neighborhoods.find(n => n.name.toLowerCase().includes(neighborhoodRaw));
   }
 
   return { ...base, matchedNeighborhood, isInnerLoop: false, isComplete: !!matchedNeighborhood };
@@ -197,6 +197,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const modalRef                = useRef(null);
   const navigate                = useNavigate();
   const { locations }           = useLocations();
+  const { neighborhoods }       = useNeighborhoods();
 
   const corpus = useMemo(() => {
     const items = [];
@@ -231,7 +232,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       });
     });
 
-    neighborhoodBlurbs.forEach(n => {
+    neighborhoods.forEach(n => {
       items.push({
         label:    n.name,
         sublabel: '',
@@ -275,7 +276,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     items.push({ label: 'add-location', sublabel: '', type: 'add-location', path: '/add-location',     hidden: true });
 
     return items;
-  }, [locations]);
+  }, [locations, neighborhoods]);
 
   // Ghost hint — shown when query matches a keyword but hasn't entered chain mode yet
   const keywordHint = useMemo(() => {
@@ -293,8 +294,8 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const chain = useMemo(() => {
     const q = query.toLowerCase();
     if (!q.includes(' in') && !q.includes(' near')) return null;
-    return parseChain(query);
-  }, [query]);
+    return parseChain(query, neighborhoods);
+  }, [query, neighborhoods]);
 
   const chainData = useMemo(() => {
     const empty = { items: [], primaryCount: 0, nearbyCount: 0, nearbyStart: 0, hasNeighborhoodLink: false };
@@ -313,7 +314,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     // Inner-loop: search across all innerLoop: true neighborhoods
     if (chain.isInnerLoop) {
       const innerLoopSet = new Set(
-        neighborhoodBlurbs.filter(nb => nb.innerLoop).map(nb => nb.name)
+        neighborhoods.filter(nb => nb.innerLoop).map(nb => nb.name)
       );
       const locs = locations
         .filter(loc => loc.name && chain.matcher(loc) && innerLoopSet.has(loc.neighborhood))
@@ -349,7 +350,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       nearbyStart:         primaryLocs.length,
       hasNeighborhoodLink: true,
     };
-  }, [chain, locations]);
+  }, [chain, locations, neighborhoods]);
 
   // Separator prefix hint — "burgers n" → Tab → "burgers near "
   const separatorHint = useMemo(() => {
