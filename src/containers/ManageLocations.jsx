@@ -4,21 +4,9 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useLocations } from '../contexts/LocationsContext';
+import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
 import '../styles/containers/add-location.css';
 import '../styles/containers/manage-locations.css';
-
-const NEIGHBORHOODS = [
-  'Acres Home','Airline','Astrodome Area','Atascocita','Bellaire','Blalock Market',
-  'Central Northwest','Chinatown','Cinco Ranch','CityCentre','Cypress','Deerbrook',
-  'Downtown','EaDo','East Aldine','Eastwood','Energy Corridor','Fourth Ward','Galleria',
-  'Greater Fifth Ward','Greenspoint','Greenway','Gulfgate','Heights','Houston Gardens',
-  'Humble','Hyde Park','Independence Heights','Jersey Village','Katy','Kemah',
-  'Little York','Memorial Park','Mid West','Midtown','Montrose','Museum District',
-  'Northside','Northwest Houston','Oak Forest','Rice Village','River Oaks','Rosenberg',
-  'Second Ward','South Central','South Side','Southeast Houston','Spring','Stafford',
-  'Sugar Land','Summerwood','The Woodlands','Todd Mission','Tomball','University Place',
-  'Uptown','Washington','Webster','West University Place','Westside','Willowbrook',
-];
 
 const CATEGORIES = [
   { value: 'food', label: 'Food & Restaurants' },
@@ -80,6 +68,8 @@ function locationToForm(loc) {
 export default function ManageLocations() {
   const navigate = useNavigate();
   const { locations, loading: locsLoading, refresh } = useLocations();
+  const { neighborhoods: neighborhoodDocs } = useNeighborhoods();
+  const neighborhoodNames = neighborhoodDocs.map(n => n.name).sort();
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -298,7 +288,7 @@ export default function ManageLocations() {
                 Neighborhood
                 <select className="add-location__select" value={form.neighborhood} onChange={e => setField('neighborhood', e.target.value)}>
                   <option value="">— Select a neighborhood —</option>
-                  {NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
+                  {neighborhoodNames.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </label>
               <label className="add-location__label">

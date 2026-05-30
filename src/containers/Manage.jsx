@@ -112,6 +112,20 @@ export default function Manage() {
             </Link>
           </div>
         </section>
+
+        <section className="manage__section">
+          <h2 className="manage__section-title">Data &amp; Seed</h2>
+          <div className="manage__grid">
+            <Link to="/seed" className="manage__card">
+              <span className="manage__card-title">Seed Locations</span>
+              <span className="manage__card-desc">Write all locations from the static data file to Firestore.</span>
+            </Link>
+            <Link to="/manage/seed-neighborhoods" className="manage__card">
+              <span className="manage__card-title">Seed Neighborhoods</span>
+              <span className="manage__card-desc">Merge and write all neighborhood data to Firestore.</span>
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

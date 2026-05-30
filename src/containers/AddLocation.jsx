@@ -3,20 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { collection, addDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
+import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
 import '../styles/containers/add-location.css';
-
-const NEIGHBORHOODS = [
-  'Acres Home','Airline','Astrodome Area','Atascocita','Bellaire','Blalock Market',
-  'Central Northwest','Chinatown','Cinco Ranch','CityCentre','Cypress','Deerbrook',
-  'Downtown','EaDo','East Aldine','Eastwood','Energy Corridor','Fourth Ward','Galleria',
-  'Greater Fifth Ward','Greenspoint','Greenway','Gulfgate','Heights','Houston Gardens',
-  'Humble','Hyde Park','Independence Heights','Jersey Village','Katy','Kemah',
-  'Little York','Memorial Park','Mid West','Midtown','Montrose','Museum District',
-  'Northside','Northwest Houston','Oak Forest','Rice Village','River Oaks','Rosenberg',
-  'Second Ward','South Central','South Side','Southeast Houston','Spring','Stafford',
-  'Sugar Land','Summerwood','The Woodlands','Todd Mission','Tomball','University Place',
-  'Uptown','Washington','Webster','West University Place','Westside','Willowbrook',
-];
 
 const CATEGORIES = [
   { value: 'food', label: 'Food & Restaurants' },
@@ -73,6 +61,8 @@ const defaultForm = {
 
 export default function AddLocation() {
   const navigate = useNavigate();
+  const { neighborhoods: neighborhoodDocs } = useNeighborhoods();
+  const neighborhoodNames = neighborhoodDocs.map(n => n.name).sort();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [copied, setCopied] = useState(false);
@@ -257,7 +247,7 @@ export default function AddLocation() {
                 onChange={e => setField('neighborhood', e.target.value)}
               >
                 <option value="">— Select a neighborhood —</option>
-                {NEIGHBORHOODS.map(n => (
+                {neighborhoodNames.map(n => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>

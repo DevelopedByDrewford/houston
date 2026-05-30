@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
-import { REGIONS, REGION_COPY, NEIGHBORHOOD_META } from '../data/neighborhood-regions';
+import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
+import { REGIONS, REGION_COPY } from '../data/neighborhood-regions';
 
 const slugify = (text) =>
   text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -277,7 +278,8 @@ const AZDirectory = ({ neighborhoods }) => {
 // ---------- Page ----------
 
 const Neighborhoods = () => {
-  const { locations, loading } = useLocations();
+  const { locations, loading: locationsLoading } = useLocations();
+  const { neighborhoods, loading: neighborhoodsLoading } = useNeighborhoods();
   const [activeRegion, setActiveRegion] = useState('all');
   const [view, setView] = useState('photo');
 
@@ -291,11 +293,11 @@ const Neighborhoods = () => {
   }, [locations]);
 
   const enrichedNeighborhoods = useMemo(() => {
-    return NEIGHBORHOOD_META.map(meta => ({
-      ...meta,
-      count: countsByNeighborhood[meta.name] || meta.count || 0,
-    })).filter(n => n.count > 0 || !loading);
-  }, [countsByNeighborhood, loading]);
+    return neighborhoods.map(n => ({
+      ...n,
+      count: countsByNeighborhood[n.name] || 0,
+    }));
+  }, [neighborhoods, countsByNeighborhood]);
 
   const filtered = useMemo(() => {
     if (activeRegion === 'all') return enrichedNeighborhoods;
@@ -312,7 +314,7 @@ const Neighborhoods = () => {
 
   const featured = enrichedNeighborhoods.find(n => n.name === 'Montrose') || enrichedNeighborhoods[0];
 
-  if (loading) {
+  if (locationsLoading || neighborhoodsLoading) {
     return <div className="listing-page"><div className="listing-loading">Loading neighborhoods…</div></div>;
   }
 

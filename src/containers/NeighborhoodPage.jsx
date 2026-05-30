@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import SpotCard from '../components/SpotCard';
-import neighborhoodBlurbs from '../data/neighborhoods';
-import { NEIGHBORHOOD_META, REGIONS } from '../data/neighborhood-regions';
+import { REGIONS } from '../data/neighborhood-regions';
 import { useLocations } from '../contexts/LocationsContext';
+import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
 
 const slugify = (text) => {
   if (typeof text !== 'string') return '';
@@ -209,14 +209,15 @@ const StubNote = ({ name, spotCount }) => (
 
 const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
   const { slug } = useParams();
-  const { locations, loading } = useLocations();
+  const { locations, loading: locationsLoading } = useLocations();
+  const { neighborhoods, loading: neighborhoodsLoading } = useNeighborhoods();
 
-  if (loading) {
+  if (locationsLoading || neighborhoodsLoading) {
     return <div className="listing-page"><div className="listing-loading">Loading…</div></div>;
   }
 
-  const matchedLoc = locations.find(loc => slugify(loc.neighborhood) === slug);
-  if (!matchedLoc) {
+  const current = neighborhoods.find(n => slugify(n.name) === slug);
+  if (!current) {
     return (
       <div className="listing-page" style={{ padding: '4rem 2rem', fontFamily: 'var(--mono)', fontSize: 13, opacity: 0.6 }}>
         Neighborhood not found.
@@ -224,22 +225,23 @@ const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
     );
   }
 
-  const neighborhoodName = matchedLoc.neighborhood;
+  const neighborhoodName = current.name;
+  const region = REGIONS.find(r => r.id === current.region);
+
+  const countsByNeighborhood = {};
+  locations.forEach(loc => {
+    if (loc.neighborhood) countsByNeighborhood[loc.neighborhood] = (countsByNeighborhood[loc.neighborhood] || 0) + 1;
+  });
 
   const allSpots = locations
     .filter(loc => loc.neighborhood === neighborhoodName)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const blurbObj = neighborhoodBlurbs.find(n => n.name === neighborhoodName) || {};
-  const meta     = NEIGHBORHOOD_META.find(n => n.name === neighborhoodName) || {};
-  const region   = REGIONS.find(r => r.id === meta.region);
-  const heroImg  = blurbObj.img || meta.img;
-
-  const nearbyWithData = (blurbObj.nearby || []).map(name => {
-    const b = neighborhoodBlurbs.find(n => n.name === name) || {};
-    const m = NEIGHBORHOOD_META.find(n => n.name === name) || {};
-    return { name, img: b.img || m.img, tag: m.tag || '', count: m.count };
-  }).filter(n => n.img).slice(0, 4);
+  const nearbyWithData = (current.nearby || []).map(name => {
+    const n = neighborhoods.find(nb => nb.name === name);
+    if (!n?.img) return null;
+    return { name, img: n.img, tag: n.tag || '', count: countsByNeighborhood[name] || 0 };
+  }).filter(Boolean).slice(0, 4);
 
   return (
     <div className="listing-page">
@@ -247,18 +249,18 @@ const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
 
       <CoverHero
         name={neighborhoodName}
-        tag={meta.tag}
-        img={heroImg}
+        tag={current.tag}
+        img={current.img}
         region={region}
         spotCount={allSpots.length}
       />
 
       <LedeFacts
-        blurb={blurbObj.blurb}
+        blurb={current.blurb}
         spotCount={allSpots.length}
         region={region}
-        tag={meta.tag}
-        innerLoop={blurbObj.innerLoop}
+        tag={current.tag}
+        innerLoop={current.innerLoop}
       />
 
       {allSpots.length > 0 ? (

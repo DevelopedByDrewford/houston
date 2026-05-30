@@ -20,10 +20,12 @@ import ManageNeighborhoods from './containers/ManageNeighborhoods';
 import Manage from './containers/Manage';
 import AddNeighborhood from './containers/AddNeighborhood';
 import SeedLocations from './containers/SeedLocations';
+import SeedNeighborhoods from './containers/SeedNeighborhoods';
 import TestContainer from './containers/TestContainer';
 
 // Context
 import { LocationsProvider } from './contexts/LocationsContext';
+import { NeighborhoodsProvider } from './contexts/NeighborhoodsContext';
 
 // Utilities
 import ScrollToTopReroute from './utils/ScrollToTopReroute';
@@ -52,6 +54,7 @@ function App() {
 
   return (
     <LocationsProvider>
+    <NeighborhoodsProvider>
       <Router>
         <div className='app-router-wrapper'>
           <div className='app-router-wrapper__inner' ref={scrollRef}>
@@ -138,12 +141,17 @@ function App() {
                 path='/seed'
                 element={<SeedLocations />} />
 
+              <Route
+                path='/manage/seed-neighborhoods'
+                element={<SeedNeighborhoods />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
           </div>
         </div>
       </Router>
+    </NeighborhoodsProvider>
     </LocationsProvider>
   );
 }
