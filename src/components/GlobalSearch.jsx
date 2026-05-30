@@ -11,6 +11,8 @@ import activityButtons from '../data/activity-types';
 const slugify = (text) =>
   (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+const normalize = (text) => (text || '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
+
 const PAGE_ROUTES = [
   { label: 'Home',          path: '/'              },
   { label: 'Eats',          path: '/eats'          },
@@ -386,11 +388,13 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     const isPageQuery = raw.startsWith('/');
     const q = isPageQuery ? raw.slice(1) : raw;
     if (!q) return [];
+    const nq = normalize(q);
     return corpus.filter(item => {
       if (isPageQuery && item.type !== 'page') return false;
       return (
         item.label.toLowerCase().includes(q) ||
-        item.keywords?.some(k => k.toLowerCase().includes(q))
+        normalize(item.label).includes(nq) ||
+        item.keywords?.some(k => k.toLowerCase().includes(q) || normalize(k).includes(nq))
       );
     });
   }, [query, corpus, chain, keywordHint, separatorHint]);

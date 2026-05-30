@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
 import neighborhoodBlurbs from '../data/neighborhoods';
 import activityTypes from '../data/activity-types';
+import generateLocationSlug from '../utils/slug';
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
 
@@ -220,6 +221,7 @@ function FeaturedCard({ spot }) {
 
   return (
     <figure style={{ margin: 0 }}>
+      <Link to={`/location/${generateLocationSlug(spot)}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div style={{
         position: 'relative',
         aspectRatio: '4/5',
@@ -252,6 +254,7 @@ function FeaturedCard({ spot }) {
           }}>{spot.name}</div>
         </div>
       </div>
+      </Link>
       {spot.blurb && (
         <figcaption style={{
           fontFamily: 'var(--serif)', fontSize: 14.5, color: 'var(--ink)', opacity: 0.7,
@@ -478,6 +481,7 @@ function SpotCard({ spot, index }) {
   })();
 
   return (
+    <Link to={`/location/${generateLocationSlug(spot)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
     <article className="home-spot-card" style={{
       display: 'flex', flexDirection: 'column',
       background: 'var(--paper)', cursor: 'pointer',
@@ -524,6 +528,7 @@ function SpotCard({ spot, index }) {
         )}
       </div>
     </article>
+    </Link>
   );
 }
 
@@ -746,6 +751,9 @@ function ActivitiesSection({ todaysPick, activityCounts }) {
 
 // ─── Neighborhoods section ────────────────────────────────────────────────────
 
+const slugifyHood = (text) =>
+  text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
 const FEATURED_HOODS = [
   { name: 'Montrose',        tag: 'Eat / Drink / Walk' },
   { name: 'Heights',         tag: 'Brunch / Boutique'  },
@@ -782,7 +790,7 @@ function HoodsSection({ neighborhoodCounts }) {
         border: '1px solid rgba(26,34,56,0.1)',
       }}>
         {hoods.map((h, i) => (
-          <Link key={h.name} to="/atlas" className="home-hood-card" style={{
+          <Link key={h.name} to={`/atlas/${slugifyHood(h.name)}`} className="home-hood-card" style={{
             background: 'var(--paper)', color: 'var(--ink)', textDecoration: 'none',
             padding: '22px 20px 20px',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
