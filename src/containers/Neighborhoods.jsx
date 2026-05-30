@@ -107,26 +107,90 @@ const RegionCopy = ({ activeRegion }) => {
 
 // ---------- City map ----------
 
+// Approximate geographic centers [lat, lng] for known Houston neighborhoods.
+// Bounding box: lng -95.92→-94.97, lat 29.44→30.28
+const NEIGHBORHOOD_GEO = {
+  'Acres Home':           [29.87, -95.47],
+  'Airline':              [29.83, -95.37],
+  'Astrodome Area':       [29.69, -95.40],
+  'Atascocita':           [29.97, -95.17],
+  'Bellaire':             [29.71, -95.46],
+  'Blalock Market':       [29.77, -95.51],
+  'Central Northwest':    [29.84, -95.44],
+  'Chinatown':            [29.70, -95.50],
+  'Cinco Ranch':          [29.74, -95.76],
+  'CityCentre':           [29.77, -95.56],
+  'Cypress':              [29.97, -95.65],
+  'Deerbrook':            [29.97, -95.17],
+  'Downtown':             [29.76, -95.37],
+  'EaDo':                 [29.74, -95.36],
+  'East Aldine':          [29.87, -95.27],
+  'Eastwood':             [29.73, -95.32],
+  'Energy Corridor':      [29.76, -95.66],
+  'First Ward':           [29.77, -95.38],
+  'Fourth Ward':          [29.76, -95.40],
+  'Galleria':             [29.74, -95.46],
+  'Greater Fifth Ward':   [29.78, -95.33],
+  'Greenspoint':          [29.95, -95.41],
+  'Greenway':             [29.73, -95.43],
+  'Gulfgate':             [29.68, -95.31],
+  'Heights':              [29.80, -95.41],
+  'Houston Gardens':      [29.88, -95.28],
+  'Humble':               [29.99, -95.26],
+  'Hyde Park':            [29.74, -95.39],
+  'Independence Heights': [29.83, -95.42],
+  'Jersey Village':       [29.88, -95.57],
+  'Katy':                 [29.79, -95.82],
+  'Kemah':                [29.54, -95.02],
+  'Little York':          [29.85, -95.33],
+  'Memorial Park':        [29.76, -95.43],
+  'Mid West':             [29.73, -95.49],
+  'Midtown':              [29.74, -95.38],
+  'Montrose':             [29.74, -95.40],
+  'Museum District':      [29.72, -95.39],
+  'Northside':            [29.81, -95.37],
+  'Northwest Houston':    [29.86, -95.52],
+  'Oak Forest':           [29.82, -95.44],
+  'Rice Village':         [29.72, -95.42],
+  'River Oaks':           [29.75, -95.43],
+  'Rosenberg':            [29.56, -95.81],
+  'Second Ward':          [29.75, -95.34],
+  'South Central':        [29.71, -95.38],
+  'South Side':           [29.67, -95.37],
+  'Southeast Houston':    [29.67, -95.28],
+  'Spring':               [30.07, -95.42],
+  'Stafford':             [29.62, -95.56],
+  'Sugar Land':           [29.60, -95.63],
+  'Summerwood':           [29.96, -95.17],
+  'The Woodlands':        [30.17, -95.47],
+  'Todd Mission':         [30.13, -95.87],
+  'Tomball':              [30.09, -95.62],
+  'University Place':     [29.72, -95.41],
+  'Uptown':               [29.74, -95.46],
+  'Washington':           [29.77, -95.39],
+  'Webster':              [29.54, -95.12],
+  'West University Place':[29.71, -95.43],
+  'Westside':             [29.74, -95.58],
+  'Willowbrook':          [29.91, -95.55],
+};
+
+const GEO_LNG_MIN = -95.92, GEO_LNG_MAX = -94.97;
+const GEO_LAT_MIN = 29.44,  GEO_LAT_MAX = 30.28;
+
+function geoToXY(lat, lng) {
+  const x = (lng - GEO_LNG_MIN) / (GEO_LNG_MAX - GEO_LNG_MIN) * 100;
+  const y = (GEO_LAT_MAX - lat) / (GEO_LAT_MAX - GEO_LAT_MIN) * 100;
+  return { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) };
+}
+
 const CityMap = ({ neighborhoods }) => {
   const [hoverIdx, setHoverIdx] = useState(null);
 
   const positions = useMemo(() => {
-    const bands = {
-      inner_loop: { cx: 50, cy: 48, r: 8 },
-      north:      { cx: 48, cy: 30, r: 10 },
-      south:      { cx: 52, cy: 62, r: 8 },
-      east:       { cx: 70, cy: 50, r: 9 },
-      west:       { cx: 30, cy: 46, r: 10 },
-      outer:      { cx: 50, cy: 50, r: 38 },
-    };
     return neighborhoods.map(n => {
-      const band = bands[n.region] || bands.outer;
-      const h = [...n.name].reduce((a, c) => a + c.charCodeAt(0), 0);
-      const a = (h * 137.5) % 360;
-      const r = (h % 100) / 100 * band.r;
-      const x = band.cx + Math.cos(a * Math.PI / 180) * r;
-      const y = band.cy + Math.sin(a * Math.PI / 180) * r * 0.7;
-      return { x: Math.max(4, Math.min(96, x)), y: Math.max(6, Math.min(94, y)) };
+      const coords = NEIGHBORHOOD_GEO[n.name];
+      if (coords) return geoToXY(coords[0], coords[1]);
+      return { x: 50, y: 50 };
     });
   }, [neighborhoods]);
 
@@ -144,13 +208,24 @@ const CityMap = ({ neighborhoods }) => {
             </pattern>
           </defs>
           <rect width="100" height="56" fill="url(#nb-grid)"/>
-          <path d="M -2 34 C 18 28, 30 40, 48 32 S 80 26, 102 34" fill="none" stroke="currentColor" strokeOpacity="0.32" strokeWidth="0.55"/>
-          <path d="M 10 10 C 22 16, 30 8, 44 18 S 70 24, 92 16" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1 1.5"/>
-          <path d="M 0 28 L 100 26" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
-          <path d="M 50 0 L 52 56" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
-          <path d="M 0 48 L 100 16" stroke="currentColor" strokeOpacity="0.22" strokeWidth="0.3"/>
-          <ellipse cx="50" cy="42" rx="18" ry="10" fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="0.4" strokeDasharray="0.8 0.8"/>
-          <ellipse cx="50" cy="42" rx="32" ry="18" fill="none" stroke="currentColor" strokeOpacity="0.28" strokeWidth="0.35" strokeDasharray="0.6 0.8"/>
+          {/* TX-99 Grand Parkway — outermost loop, NW at Katy, north through The Woodlands, NE near Humble/Kingwood, east near Baytown, SE at League City, south at Pearland, SW at Sugar Land */}
+          <path d="M 6 33 C 14 22, 28 13, 47 11 C 62 9, 76 13, 88 19 C 93 23, 97 29, 97 36 C 96 41, 93 47, 91 50 C 80 52, 68 52, 59 51 C 46 51, 34 50, 21 49 C 12 46, 5 40, 6 33 Z" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1 1.5"/>
+          {/* I-10 — dips south through Energy Corridor, rises north at Heights/610W, dips through downtown, levels east */}
+          <path d="M -2 33 C 15 33, 28 35, 37 35 C 42 35, 44 32, 47 32 C 51 33, 55 35, 58 35 C 72 34, 88 34, 102 34" fill="none" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
+          {/* I-45 — straight south from The Woodlands through Greenspoint to downtown, then bends southeast toward Galveston */}
+          <path d="M 50 -1 C 51 6 54 12 54 22 C 56 28 57 31 58 35 C 59 38 62 40 64 42 C 72 44 80 48 91 56" fill="none" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
+          {/* I-59/I-69 — SW Freeway from Rosenberg/Sugar Land northeast through Greenway to downtown, then Eastex Freeway northeast toward Humble/Kingwood */}
+          <path d="M 17 56 C 21 51 26 47 31 45 C 38 42 44 39 49 37 C 52 36 55 35 58 35 C 62 33 65 27 69 20 C 73 13 78 7 82 -2" fill="none" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
+          {/* TX-249 — Tomball Parkway, mostly north from Spring Branch through Willowbrook to Tomball */}
+          <path d="M 41 35 C 40 29, 38 24, 37 21 C 35 15, 32 9, 29 0" fill="none" stroke="#d65a1f" strokeOpacity="0.5" strokeWidth="0.35"/>
+          {/* Buffalo Bayou — enters west at y≈36 (lat 29.74), bends north at Heights/Shepherd (y≈33), returns through downtown, exits east toward Ship Channel */}
+          <path
+            d="M -2 36 C 20 36, 40 35, 50 35 C 52 34, 54 33, 56 35 C 58 36, 65 37, 75 37 C 82 37, 90 36, 102 36"
+            fill="none" stroke="rgba(80,130,180,0.55)" strokeWidth=".8"/>
+          {/* Loop 610 — roughly rectangular, NW corner near Heights/I-10W, NE near Fifth Ward, SE/SW at South Loop */}
+          <path d="M 49 32 C 56 32, 64 32, 67 33 C 67 35, 67 38, 67 41 C 62 41, 54 41, 47 41 C 47 39, 47 35, 49 32 Z" fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="0.4" strokeDasharray="0.8 0.8"/>
+          {/* Beltway 8 — NW near I-10W, north arc through TX-249/I-45N/I-69N, east near I-10E, south arc through I-69S/I-45S/I-69SW, closes at NW */}
+          <path d="M 24 34 C 28 28, 34 26, 39 25 C 45 22, 51 21, 54 21 C 62 21, 70 21, 74 21 C 80 24, 86 30, 88 34 C 87 37, 85 41, 82 44 C 75 45, 66 45, 57 45 C 50 45, 44 44, 39 44 C 33 42, 27 39, 24 34 Z" fill="none" stroke="currentColor" strokeOpacity="0.28" strokeWidth="0.35" strokeDasharray="0.6 0.8"/>
         </svg>
 
         {neighborhoods.map((n, i) => {
