@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
 import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
 import { REGIONS, REGION_COPY } from '../data/neighborhood-regions';
@@ -232,8 +232,9 @@ const CityMap = ({ neighborhoods }) => {
           const p = positions[i];
           const isHover = hoverIdx === i;
           return (
-            <div
+            <Link
               key={n.name}
+              to={`/atlas/${slugify(n.name)}`}
               onMouseEnter={() => setHoverIdx(i)}
               onMouseLeave={() => setHoverIdx(null)}
               className="nb-map__pin"
@@ -243,7 +244,7 @@ const CityMap = ({ neighborhoods }) => {
               {isHover && (
                 <span className="nb-map__pin-tooltip">{n.name} · {n.count}</span>
               )}
-            </div>
+            </Link>
           );
         })}
 
@@ -355,8 +356,20 @@ const AZDirectory = ({ neighborhoods }) => {
 const Neighborhoods = () => {
   const { locations, loading: locationsLoading } = useLocations();
   const { neighborhoods, loading: neighborhoodsLoading } = useNeighborhoods();
-  const [activeRegion, setActiveRegion] = useState('all');
-  const [view, setView] = useState('photo');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeRegion = searchParams.get('region') || 'all';
+  const view = searchParams.get('view') || 'photo';
+
+  const setActiveRegion = (r) => setSearchParams(prev => {
+    const next = new URLSearchParams(prev);
+    r === 'all' ? next.delete('region') : next.set('region', r);
+    return next;
+  }, { preventScrollReset: true });
+  const setView = (v) => setSearchParams(prev => {
+    const next = new URLSearchParams(prev);
+    v === 'photo' ? next.delete('view') : next.set('view', v);
+    return next;
+  }, { preventScrollReset: true });
 
   const countsByNeighborhood = useMemo(() => {
     if (!Array.isArray(locations)) return {};

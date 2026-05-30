@@ -17,7 +17,7 @@ const Breadcrumb = ({ region, name }) => (
   <div className="nbp-crumb">
     <Link to="/atlas" className="nbp-crumb__link">Atlas</Link>
     <span className="nbp-crumb__sep">/</span>
-    {region && <span className="nbp-crumb__seg">{region.label}</span>}
+    {region && <Link to={`/atlas?region=${region.id}`} className="nbp-crumb__link">{region.label}</Link>}
     {region && <span className="nbp-crumb__sep">/</span>}
     <span className="nbp-crumb__seg nbp-crumb__seg--active">{name}</span>
   </div>
