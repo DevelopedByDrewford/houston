@@ -704,9 +704,9 @@ const GlobalSearch = ({ isOpen, onClose }) => {
               )
             ) : chain.isMeToken ? (
               <p className="gsearch-empty">
-                {geoStatus === 'loading'     && 'Finding your location…'}
+                {(geoStatus === 'idle' || geoStatus === 'loading') && 'Finding your location…'}
                 {geoStatus === 'denied'      && 'Location access was denied'}
-                {geoStatus === 'unavailable' && 'Location unavailable in this browser'}
+                {geoStatus === 'unavailable' && 'Could not determine your location'}
               </p>
             ) : (
               chain.neighborhoodRaw.length > 0 && (
