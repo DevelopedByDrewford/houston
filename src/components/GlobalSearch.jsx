@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocations } from '../contexts/LocationsContext';
 import { useNeighborhoods } from '../contexts/NeighborhoodsContext';
+import { useCurrentNeighborhood } from '../hooks/useCurrentNeighborhood';
 import badges from '../data/badges';
 import { events, schedules, community, sports, creators } from '../data/resources';
 import generateLocationSlug from '../utils/slug';
@@ -132,6 +133,9 @@ const KEYWORD_PATHS    = new Map();
   });
 })();
 
+// Synonyms for "near me" — detected before neighborhood matching to avoid false matches
+const ME_TOKENS = new Set(['me', 'us', 'here', 'my location', 'my neighborhood']);
+
 // Parse "X in Y" or "X near Y" — returns null if keyword isn't recognized (falls back to regular search)
 const parseChain = (query, neighborhoods) => {
   const m = query.match(/^(.+?)\s+(in|near)\s*(.*)$/i);
@@ -169,6 +173,11 @@ const parseChain = (query, neighborhoods) => {
     isBroadKeyword: BROAD_KEYWORDS.has(matchedKeyword),
   };
 
+  // "near me / near us / near here / near my location" — detected before neighborhood matching
+  if (ME_TOKENS.has(neighborhoodRaw)) {
+    return { ...base, isMeToken: true, matchedNeighborhood: null, isInnerLoop: false, isComplete: false };
+  }
+
   // "in the loop" — activates when no real neighborhood matches the same prefix
   if (
     neighborhoodRaw.length >= 2 &&
@@ -196,8 +205,10 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const inputRef                = useRef(null);
   const modalRef                = useRef(null);
   const navigate                = useNavigate();
-  const { locations }           = useLocations();
-  const { neighborhoods }       = useNeighborhoods();
+  const { locations }                                  = useLocations();
+  const { neighborhoods }                              = useNeighborhoods();
+  const { neighborhoodName: currentNeighborhood,
+          status: geoStatus }                          = useCurrentNeighborhood();
 
   const corpus = useMemo(() => {
     const items = [];
@@ -291,11 +302,20 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   }, [query]);
 
   // Chain mode — activated when keyword is recognized; null otherwise (regular search)
-  const chain = useMemo(() => {
+  const rawChain = useMemo(() => {
     const q = query.toLowerCase();
     if (!q.includes(' in') && !q.includes(' near')) return null;
     return parseChain(query, neighborhoods);
   }, [query, neighborhoods]);
+
+  // Resolve me-tokens to the user's current neighborhood
+  const chain = useMemo(() => {
+    if (!rawChain?.isMeToken) return rawChain;
+    const resolved = currentNeighborhood
+      ? neighborhoods.find(n => n.name === currentNeighborhood) ?? null
+      : null;
+    return { ...rawChain, matchedNeighborhood: resolved, isComplete: !!resolved };
+  }, [rawChain, currentNeighborhood, neighborhoods]);
 
   const chainData = useMemo(() => {
     const empty = { items: [], primaryCount: 0, nearbyCount: 0, nearbyStart: 0, hasNeighborhoodLink: false };
@@ -431,11 +451,17 @@ const GlobalSearch = ({ isOpen, onClose }) => {
 
   // Chain ghost — Tab-completable neighborhood suggestion in chain mode
   const chainGhost = useMemo(() => {
-    if (!chain || chain.isInnerLoop) return null;
+    if (!chain || chain.isInnerLoop || chain.isMeToken) return null;
     const { matchedKeyword, separator, neighborhoodRaw, matchedNeighborhood } = chain;
 
     if (!neighborhoodRaw) {
-      return { typed: '', completed: 'Montrose', fill: `${matchedKeyword} ${separator} Montrose` };
+      const defaultName = currentNeighborhood || 'Montrose';
+      return {
+        typed: '',
+        completed: defaultName,
+        fill: `${matchedKeyword} ${separator} ${defaultName}`,
+        isCurrentLocation: !!currentNeighborhood,
+      };
     }
 
     if (matchedNeighborhood) {
@@ -445,12 +471,13 @@ const GlobalSearch = ({ isOpen, onClose }) => {
           typed: neighborhoodRaw,
           completed: matchedNeighborhood.name,
           fill: `${matchedKeyword} ${separator} ${matchedNeighborhood.name}`,
+          isCurrentLocation: false,
         };
       }
     }
 
     return null;
-  }, [chain]);
+  }, [chain, currentNeighborhood]);
 
   // Unified list for keyboard nav
   const activeList = chainFallbackList ?? (chain ? chainData.items : (keywordHint || separatorHint) ? keywordResults : visibleResults);
@@ -589,6 +616,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
               </span>
               <span className="gsearch-chain-sep">{chain.separator}</span>
               <span className={`gsearch-chain-token${chain.matchedNeighborhood ? '' : ' gsearch-chain-token--dim'}`}>
+                {chain.isMeToken && <span className="gsearch-me-dot" />}
                 {chain.matchedNeighborhood?.name || chain.neighborhoodRaw || '…'}
               </span>
             </div>
@@ -600,6 +628,9 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                     {chain.matchedKeyword} {chain.separator}{chainGhost.typed ? ` ${chainGhost.typed}` : ' '}
                   </span>
                   <span className="gsearch-copilot-hint__ghost">
+                    {chainGhost.isCurrentLocation && !chainGhost.typed && (
+                      <span className="gsearch-me-dot gsearch-me-dot--ghost" />
+                    )}
                     {chainGhost.typed
                       ? chainGhost.completed.slice(chainGhost.typed.length)
                       : chainGhost.completed}
@@ -671,6 +702,12 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                   </div>
                 </>
               )
+            ) : chain.isMeToken ? (
+              <p className="gsearch-empty">
+                {geoStatus === 'loading'     && 'Finding your location…'}
+                {geoStatus === 'denied'      && 'Location access was denied'}
+                {geoStatus === 'unavailable' && 'Location unavailable in this browser'}
+              </p>
             ) : (
               chain.neighborhoodRaw.length > 0 && (
                 <p className="gsearch-empty">No neighborhood matching <em>"{chain.neighborhoodRaw}"</em></p>
@@ -731,7 +768,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         ) : (
           <div className="gsearch-hint-row">
             <div>Type to search &nbsp;·&nbsp; <kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>↵</kbd> go</div>
-            <div className="gsearch-hint-chain">try &ldquo;coffee in heights&rdquo; &nbsp;·&nbsp; &ldquo;open late near downtown&rdquo; &nbsp;·&nbsp; &ldquo;vibes in the loop&rdquo;</div>
+            <div className="gsearch-hint-chain">try &ldquo;coffee near me&rdquo; &nbsp;·&nbsp; &ldquo;open late near downtown&rdquo; &nbsp;·&nbsp; &ldquo;vibes in the loop&rdquo;</div>
           </div>
         )}
 

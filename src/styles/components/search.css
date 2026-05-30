@@ -428,6 +428,31 @@
   letter-spacing: 0.1em;
 }
 
+/* ── "Near me" pulsating dot ───────────────────────────── */
+@keyframes gsearch-pulse {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(0.72); }
+}
+
+.gsearch-me-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: gsearch-pulse 1.8s ease-in-out infinite;
+  margin-right: 5px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.gsearch-me-dot--ghost {
+  background: rgba(244, 237, 224, 0.28);
+  margin-right: 3px;
+  width: 5px;
+  height: 5px;
+}
+
 /* ── Chain empty state fallback actions ────────────────── */
 .gsearch-result--action {
   color: var(--accent);
