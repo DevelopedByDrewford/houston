@@ -16,6 +16,9 @@ import Activities from './containers/Activities';
 import Resources from './containers/Resources';
 import AddLocation from './containers/AddLocation';
 import ManageLocations from './containers/ManageLocations';
+import ManageNeighborhoods from './containers/ManageNeighborhoods';
+import Manage from './containers/Manage';
+import AddNeighborhood from './containers/AddNeighborhood';
 import SeedLocations from './containers/SeedLocations';
 import TestContainer from './containers/TestContainer';
 
@@ -112,12 +115,24 @@ function App() {
                 element={<TestContainer />} />
 
               <Route
-                path='/add-location'
+                path='/manage'
+                element={<Manage />} />
+
+              <Route
+                path='/manage/locations'
+                element={<ManageLocations />} />
+
+              <Route
+                path='/manage/locations/add'
                 element={<AddLocation />} />
 
               <Route
-                path='/manage-locations'
-                element={<ManageLocations />} />
+                path='/manage/neighborhoods'
+                element={<ManageNeighborhoods />} />
+
+              <Route
+                path='/manage/neighborhoods/add'
+                element={<AddNeighborhood />} />
 
               <Route
                 path='/seed'

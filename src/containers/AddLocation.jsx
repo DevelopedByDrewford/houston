@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, addDoc } from 'firebase/firestore';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import '../styles/containers/add-location.css';
 
@@ -71,39 +72,23 @@ const defaultForm = {
 };
 
 export default function AddLocation() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [copied, setCopied] = useState(false);
-  const [submitState, setSubmitState] = useState('idle'); // idle | loading | success | error
+  const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState('');
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+    return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
+      if (!u) navigate('/manage');
     });
-    return unsub;
-  }, []);
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError('');
-    try {
-      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-    } catch (err) {
-      setLoginError('Invalid email or password.');
-    } finally {
-      setLoginLoading(false);
-    }
-  }
+  }, [navigate]);
 
   const isFood = form.category === 'food';
   const subcategoryOptions = isFood ? FOOD_SUBCATEGORIES : ACTIVITY_SUBCATEGORIES;
@@ -191,50 +176,8 @@ export default function AddLocation() {
     return true;
   }
 
-  if (authLoading) {
+  if (authLoading || !user) {
     return <p style={{ textAlign: 'center', padding: '3rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>;
-  }
-
-  if (!user) {
-    return (
-      <div className="add-location">
-        <div className="add-location__header">
-          <h1>Add a Location</h1>
-          <p>Sign in to continue.</p>
-        </div>
-        <form className="add-location__login" onSubmit={handleLogin}>
-          <label className="add-location__label">
-            Email
-            <input
-              className="add-location__input"
-              type="email"
-              value={loginEmail}
-              onChange={e => setLoginEmail(e.target.value)}
-              required
-              autoFocus
-            />
-          </label>
-          <label className="add-location__label">
-            Password
-            <input
-              className="add-location__input"
-              type="password"
-              value={loginPassword}
-              onChange={e => setLoginPassword(e.target.value)}
-              required
-            />
-          </label>
-          {loginError && <p className="add-location__error">{loginError}</p>}
-          <button
-            className="add-location__nav-btn primary"
-            type="submit"
-            disabled={loginLoading}
-          >
-            {loginLoading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
-      </div>
-    );
   }
 
   return (
@@ -242,7 +185,13 @@ export default function AddLocation() {
       <div className="add-location__header">
         <h1>Add a Location</h1>
         <p>
-          Signed in as {user.email}&nbsp;·&nbsp;
+          <button
+            onClick={() => navigate('/manage')}
+            style={{ background: 'none', border: 'none', color: '#E57200', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}
+          >
+            ← Manage
+          </button>
+          &nbsp;·&nbsp;Signed in as {user.email}&nbsp;·&nbsp;
           <button
             onClick={() => signOut(auth)}
             style={{ background: 'none', border: 'none', color: '#E57200', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}

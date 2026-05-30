@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useLocations } from '../contexts/LocationsContext';
 import '../styles/containers/add-location.css';
@@ -83,10 +83,6 @@ export default function ManageLocations() {
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
 
   const [search, setSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -102,25 +98,12 @@ export default function ManageLocations() {
   const [redirectCountdown, setRedirectCountdown] = useState(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+    return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
+      if (!u) navigate('/manage');
     });
-    return unsub;
-  }, []);
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError('');
-    try {
-      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-    } catch {
-      setLoginError('Invalid email or password.');
-    } finally {
-      setLoginLoading(false);
-    }
-  }
+  }, [navigate]);
 
   function selectLocation(loc) {
     setSelectedLocation(loc);
@@ -263,33 +246,8 @@ export default function ManageLocations() {
     </button>
   );
 
-  if (authLoading) {
+  if (authLoading || !user) {
     return <p style={{ textAlign: 'center', padding: '3rem', fontFamily: 'Avenir Next Condensed, sans-serif', fontSize: '1.2rem' }}>Loading...</p>;
-  }
-
-  if (!user) {
-    return (
-      <div className="add-location">
-        <div className="add-location__header">
-          <h1>Manage Locations</h1>
-          <p>Sign in to continue.</p>
-        </div>
-        <form className="add-location__login" onSubmit={handleLogin}>
-          <label className="add-location__label">
-            Email
-            <input className="add-location__input" type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required autoFocus />
-          </label>
-          <label className="add-location__label">
-            Password
-            <input className="add-location__input" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
-          </label>
-          {loginError && <p className="add-location__error">{loginError}</p>}
-          <button className="add-location__nav-btn primary" type="submit" disabled={loginLoading}>
-            {loginLoading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
-      </div>
-    );
   }
 
   if (selectedLocation && form) {
@@ -502,7 +460,15 @@ export default function ManageLocations() {
     <div className="manage-locations">
       <div className="add-location__header">
         <h1>Manage Locations</h1>
-        <p>Signed in as {user.email}&nbsp;·&nbsp;{signOutBtn}</p>
+        <p>
+          <button
+            onClick={() => navigate('/manage')}
+            style={{ background: 'none', border: 'none', color: '#E57200', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}
+          >
+            ← Manage
+          </button>
+          &nbsp;·&nbsp;Signed in as {user.email}&nbsp;·&nbsp;{signOutBtn}
+        </p>
       </div>
 
       <div className="manage-locations__toolbar">
@@ -513,7 +479,7 @@ export default function ManageLocations() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <button className="manage-locations__add-btn" onClick={() => navigate('/add-location')}>
+        <button className="manage-locations__add-btn" onClick={() => navigate('/manage/locations/add')}>
           + Add Location
         </button>
       </div>

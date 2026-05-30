@@ -271,7 +271,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       });
     });
 
-    items.push({ label: 'manage',       sublabel: '', type: 'manage',       path: '/manage-locations', hidden: true });
+    items.push({ label: 'manage',       sublabel: '', type: 'manage',       path: '/manage', hidden: true });
     items.push({ label: 'add-location', sublabel: '', type: 'add-location', path: '/add-location',     hidden: true });
 
     return items;
