@@ -266,7 +266,7 @@
 
 .nb-map__frame {
   position: relative;
-  aspect-ratio: 21/9;
+  aspect-ratio: 4/3;
   background: #ece5d4;
   border-radius: 2px;
   overflow: hidden;
