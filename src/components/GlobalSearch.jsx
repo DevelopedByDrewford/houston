@@ -8,6 +8,7 @@ import { events, schedules, community, sports, creators } from '../data/resource
 import generateLocationSlug from '../utils/slug';
 import restaurantButtons from '../data/restaurant-types';
 import activityButtons from '../data/activity-types';
+import { NEIGHBORHOOD_GEO } from '../data/neighborhood-geo';
 
 const slugify = (text) =>
   (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -207,8 +208,26 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const navigate                = useNavigate();
   const { locations }                                  = useLocations();
   const { neighborhoods }                              = useNeighborhoods();
-  const { neighborhoodName: currentNeighborhood,
+  const { coords: currentCoords,
           status: geoStatus }                          = useCurrentNeighborhood();
+
+  // Merged centroid map: Firebase lat/lng preferred, static file as fallback for older entries
+  const geoMap = useMemo(() => {
+    const merged = { ...NEIGHBORHOOD_GEO };
+    neighborhoods.forEach(n => { if (n.lat && n.lng) merged[n.name] = [n.lat, n.lng]; });
+    return merged;
+  }, [neighborhoods]);
+
+  // Nearest neighborhood by name, derived from live coords + merged geoMap
+  const currentNeighborhood = useMemo(() => {
+    if (!currentCoords) return null;
+    let best = null, bestDist = Infinity;
+    for (const [name, [nlat, nlng]] of Object.entries(geoMap)) {
+      const dist = (currentCoords.lat - nlat) ** 2 + (currentCoords.lng - nlng) ** 2;
+      if (dist < bestDist) { bestDist = dist; best = name; }
+    }
+    return best;
+  }, [currentCoords, geoMap]);
 
   const corpus = useMemo(() => {
     const items = [];
@@ -314,8 +333,8 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     const resolved = currentNeighborhood
       ? neighborhoods.find(n => n.name === currentNeighborhood) ?? null
       : null;
-    return { ...rawChain, matchedNeighborhood: resolved, isComplete: !!resolved };
-  }, [rawChain, currentNeighborhood, neighborhoods]);
+    return { ...rawChain, matchedNeighborhood: resolved, isComplete: !!resolved || !!currentCoords };
+  }, [rawChain, currentNeighborhood, currentCoords, neighborhoods]);
 
   const chainData = useMemo(() => {
     const empty = { items: [], primaryCount: 0, nearbyCount: 0, nearbyStart: 0, hasNeighborhoodLink: false };
@@ -339,6 +358,31 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       const locs = locations
         .filter(loc => loc.name && chain.matcher(loc) && innerLoopSet.has(loc.neighborhood))
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map(loc => toResult(loc, loc.neighborhood));
+      return { items: locs, primaryCount: locs.length, nearbyCount: 0, nearbyStart: locs.length, hasNeighborhoodLink: false };
+    }
+
+    // "near me": rank all matching locations by geographic distance from user coords
+    if (chain.isMeToken && currentCoords) {
+      const neighborhoodRank = new Map(
+        neighborhoods
+          .map(nb => {
+            const geo = geoMap[nb.name];
+            const dist = geo
+              ? (currentCoords.lat - geo[0]) ** 2 + (currentCoords.lng - geo[1]) ** 2
+              : Infinity;
+            return { name: nb.name, dist };
+          })
+          .sort((a, b) => a.dist - b.dist)
+          .map((nb, i) => [nb.name, i])
+      );
+      const locs = locations
+        .filter(loc => loc.name && chain.matcher(loc))
+        .sort((a, b) => {
+          const da = neighborhoodRank.get(a.neighborhood) ?? Infinity;
+          const db = neighborhoodRank.get(b.neighborhood) ?? Infinity;
+          return da !== db ? da - db : (a.name || '').localeCompare(b.name || '');
+        })
         .map(loc => toResult(loc, loc.neighborhood));
       return { items: locs, primaryCount: locs.length, nearbyCount: 0, nearbyStart: locs.length, hasNeighborhoodLink: false };
     }
@@ -370,7 +414,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
       nearbyStart:         primaryLocs.length,
       hasNeighborhoodLink: true,
     };
-  }, [chain, locations, neighborhoods]);
+  }, [chain, locations, neighborhoods, currentCoords, geoMap]);
 
   // Separator prefix hint — "burgers n" → Tab → "burgers near "
   const separatorHint = useMemo(() => {
@@ -392,7 +436,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     if (!matched) return [];
     const matcher = KEYWORD_MATCHERS.get(matched);
     if (!matcher) return [];
-    return locations
+    const locs = locations
       .filter(loc => loc.name && matcher(loc))
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       .map(loc => ({
@@ -400,7 +444,13 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         sublabel: [getLocCategory(loc), loc.neighborhood].filter(Boolean).join(' · '),
         path:     `/location/${generateLocationSlug(loc)}`,
       }));
-  }, [keywordHint, separatorHint, locations]);
+    const categoryPath = KEYWORD_PATHS.get(matched);
+    if (categoryPath?.includes('?category=')) {
+      const corpusItem = corpus.find(item => item.type === 'category' && item.path === categoryPath);
+      if (corpusItem) return [{ label: corpusItem.label, sublabel: corpusItem.sublabel, path: categoryPath, type: 'category' }, ...locs];
+    }
+    return locs;
+  }, [keywordHint, separatorHint, locations, corpus]);
 
   const results = useMemo(() => {
     if (chain || keywordHint || separatorHint) return [];
@@ -715,28 +765,54 @@ const GlobalSearch = ({ isOpen, onClose }) => {
             )}
           </>
         ) : (keywordHint || separatorHint) ? (
-          keywordResults.length > 0 ? (
-            <div className="gsearch-results" role="listbox">
-              <div className="gsearch-group">
-                <div className="gsearch-group-label">
-                  {keywordResults.length} location{keywordResults.length !== 1 ? 's' : ''}
-                </div>
-                {keywordResults.map((r, i) => (
-                  <div
-                    key={`kw-${r.path}-${i}`}
-                    className={`gsearch-result${i === selected ? ' gsearch-result--active' : ''}`}
-                    onClick={() => go(r.path)}
-                    onMouseEnter={() => setSelected(i)}
-                    role="option"
-                    aria-selected={i === selected}
-                  >
-                    <span className="gsearch-result__label">{r.label}</span>
-                    {r.sublabel && <span className="gsearch-result__sub">{r.sublabel}</span>}
+          keywordResults.length > 0 ? (() => {
+            const kwCategories = keywordResults.filter(r => r.type === 'category');
+            const kwLocs       = keywordResults.filter(r => r.type !== 'category');
+            return (
+              <div className="gsearch-results" role="listbox">
+                {kwCategories.length > 0 && (
+                  <div className="gsearch-group">
+                    <div className="gsearch-group-label">Categories</div>
+                    {kwCategories.map((r, i) => (
+                      <div
+                        key={`kw-cat-${r.path}-${i}`}
+                        className={`gsearch-result${i === selected ? ' gsearch-result--active' : ''}`}
+                        onClick={() => go(r.path)}
+                        onMouseEnter={() => setSelected(i)}
+                        role="option"
+                        aria-selected={i === selected}
+                      >
+                        <span className="gsearch-result__label">{r.label}</span>
+                        {r.sublabel && <span className="gsearch-result__sub">{r.sublabel}</span>}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+                {kwLocs.length > 0 && (
+                  <div className="gsearch-group">
+                    {kwCategories.length > 0 && <div className="gsearch-divider" />}
+                    <div className="gsearch-group-label">{kwLocs.length} location{kwLocs.length !== 1 ? 's' : ''}</div>
+                    {kwLocs.map((r, i) => {
+                      const flatIdx = kwCategories.length + i;
+                      return (
+                        <div
+                          key={`kw-loc-${r.path}-${i}`}
+                          className={`gsearch-result${flatIdx === selected ? ' gsearch-result--active' : ''}`}
+                          onClick={() => go(r.path)}
+                          onMouseEnter={() => setSelected(flatIdx)}
+                          role="option"
+                          aria-selected={flatIdx === selected}
+                        >
+                          <span className="gsearch-result__label">{r.label}</span>
+                          {r.sublabel && <span className="gsearch-result__sub">{r.sublabel}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ) : (
+            );
+          })() : (
             <p className="gsearch-empty">No results for <em>"{query}"</em></p>
           )
         ) : query.trim() ? (

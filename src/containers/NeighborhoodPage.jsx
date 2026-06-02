@@ -165,8 +165,8 @@ const NearbySection = ({ nearby, regionLabel }) => {
       />
       <div className="nbp-nearby__grid">
         {nearby.map(n => (
-          <Link key={n.name} to={`/atlas/${slugify(n.name)}`} className="nbp-nearby__tile">
-            <img src={n.img} alt={n.name} className="nbp-nearby__tile-img" />
+          <Link key={n.name} to={`/atlas/${slugify(n.name)}`} className={`nbp-nearby__tile${n.img ? '' : ' nbp-nearby__tile--no-img'}`}>
+            {n.img && <img src={n.img} alt={n.name} className="nbp-nearby__tile-img" />}
             <div className="nbp-nearby__tile-overlay" />
             {n.count != null && (
               <span className="nbp-nearby__tile-count">{n.count} ›</span>
@@ -237,11 +237,15 @@ const NeighborhoodPage = ({ setLat, setLon, setZoom }) => {
     .filter(loc => loc.neighborhood === neighborhoodName)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const nearbyWithData = (current.nearby || []).map(name => {
-    const n = neighborhoods.find(nb => nb.name === name);
-    if (!n?.img) return null;
-    return { name, img: n.img, tag: n.tag || '', count: countsByNeighborhood[name] || 0 };
-  }).filter(Boolean).slice(0, 4);
+  const nearbyWithData = (current.nearby || [])
+    .map(name => {
+      const n = neighborhoods.find(nb => nb.name === name);
+      if (!n) return null;
+      return { name, img: n.img || null, tag: n.tag || '', count: countsByNeighborhood[name] || 0 };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
 
   return (
     <div className="listing-page">

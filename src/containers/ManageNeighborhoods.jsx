@@ -16,18 +16,6 @@ const REGIONS = [
   { value: 'outer',      label: 'Greater Houston' },
 ];
 
-const ALL_NEIGHBORHOODS = [
-  'Acres Home','Airline','Astrodome Area','Atascocita','Bellaire','Blalock Market',
-  'Central Northwest','Chinatown','Cinco Ranch','CityCentre','Cypress','Deerbrook',
-  'Downtown','EaDo','East Aldine','Eastwood','Energy Corridor','Fourth Ward','Galleria',
-  'Greater Fifth Ward','Greenspoint','Greenway','Gulfgate','Heights','Houston Gardens',
-  'Humble','Hyde Park','Independence Heights','Jersey Village','Katy','Kemah',
-  'Little York','Memorial Park','Mid West','Midtown','Montrose','Museum District',
-  'Northside','Northwest Houston','Oak Forest','Rice Village','River Oaks','Rosenberg',
-  'Second Ward','South Central','South Side','Southeast Houston','Spring','Stafford',
-  'Sugar Land','Summerwood','The Woodlands','Todd Mission','Tomball','University Place',
-  'Uptown','Washington','Webster','West University Place','Westside','Willowbrook',
-];
 
 function neighborhoodToForm(n) {
   return {
@@ -38,6 +26,8 @@ function neighborhoodToForm(n) {
     region: n.region || 'inner_loop',
     nearby: n.nearby || [],
     tag: n.tag || '',
+    lat: n.lat ?? '',
+    lng: n.lng ?? '',
   };
 }
 
@@ -119,6 +109,8 @@ export default function ManageNeighborhoods() {
         region: form.region,
         nearby: form.nearby,
         tag: form.tag,
+        lat: form.lat !== '' ? parseFloat(form.lat) : null,
+        lng: form.lng !== '' ? parseFloat(form.lng) : null,
       });
       await syncNearbyRelationships(
         form.name,
@@ -227,6 +219,17 @@ export default function ManageNeighborhoods() {
               </select>
             </label>
 
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <label className="add-location__label" style={{ flex: 1 }}>
+                Latitude <span className="add-location__hint">(e.g. 29.77)</span>
+                <input className="add-location__input" type="number" step="any" placeholder="29.77" value={form.lat} onChange={e => setField('lat', e.target.value)} />
+              </label>
+              <label className="add-location__label" style={{ flex: 1 }}>
+                Longitude <span className="add-location__hint">(e.g. -95.38)</span>
+                <input className="add-location__input" type="number" step="any" placeholder="-95.38" value={form.lng} onChange={e => setField('lng', e.target.value)} />
+              </label>
+            </div>
+
             <div className="add-location__toggle-row">
               <span className="add-location__toggle-label">Inner Loop</span>
               <button className={`add-location__toggle${form.innerLoop ? ' on' : ''}`} onClick={() => setField('innerLoop', !form.innerLoop)} type="button">
@@ -260,12 +263,15 @@ export default function ManageNeighborhoods() {
             <h2>Nearby Neighborhoods</h2>
             <p className="add-location__hint">Select the neighborhoods that border or are closest to this one.</p>
             <div className="add-location__checkbox-grid">
-              {ALL_NEIGHBORHOODS.filter(n => n !== form.name).map(n => (
-                <label key={n} className="add-location__checkbox-item">
-                  <input type="checkbox" checked={form.nearby.includes(n)} onChange={() => toggleNearby(n)} />
-                  <span>{n}</span>
-                </label>
-              ))}
+              {[...neighborhoods]
+                .filter(n => n.name && n.name !== form.name)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(n => (
+                  <label key={n.id} className="add-location__checkbox-item">
+                    <input type="checkbox" checked={form.nearby.includes(n.name)} onChange={() => toggleNearby(n.name)} />
+                    <span>{n.name}</span>
+                  </label>
+                ))}
             </div>
             {form.nearby.length > 0 && (
               <p className="add-location__selected-tags">Selected: {form.nearby.join(', ')}</p>
