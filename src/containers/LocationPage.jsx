@@ -82,14 +82,6 @@ const TitleBlock = ({ item }) => {
       </div>
 
       <h1 className="lp-title-name">{item.name}</h1>
-
-      {item.badges && item.badges.length > 0 && (
-        <div className="lp-title-badges">
-          {item.badges.map(b => (
-            <span key={b} className="lp-badge">{b}</span>
-          ))}
-        </div>
-      )}
     </section>
   );
 };
@@ -303,6 +295,14 @@ const LocationPage = ({ setLat, setLon, setZoom }) => {
           )}
 
           <WhatToOrderCard items={location.description} />
+
+          {location.badges && location.badges.length > 0 && (
+            <div className="lp-title-badges">
+              {location.badges.map(b => (
+                <span key={b} className="lp-badge">{b}</span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="lp-body__right">
