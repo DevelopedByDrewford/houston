@@ -287,6 +287,13 @@ const LocationPage = ({ setLat, setLon, setZoom }) => {
 
       <section className="lp-body">
         <div className="lp-body__left">
+          {location.badges && location.badges.length > 0 && (
+            <div className="lp-title-badges">
+              {location.badges.map(b => (
+                <span key={b} className="lp-badge">{b}</span>
+              ))}
+            </div>
+          )}
           {lede && (
             <p className="lp-lede">
               <span className="lp-lede__dropcap" aria-hidden="true">{first}</span>
@@ -296,13 +303,7 @@ const LocationPage = ({ setLat, setLon, setZoom }) => {
 
           <WhatToOrderCard items={location.description} />
 
-          {location.badges && location.badges.length > 0 && (
-            <div className="lp-title-badges">
-              {location.badges.map(b => (
-                <span key={b} className="lp-badge">{b}</span>
-              ))}
-            </div>
-          )}
+
         </div>
 
         <div className="lp-body__right">
