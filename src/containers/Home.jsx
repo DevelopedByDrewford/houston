@@ -350,6 +350,7 @@ function HeroEditorial({ totalSpots, featuredSpot }) {
 // ─── Stats strip ───────────────────────────────────────────────────────────────
 
 function StatsStrip({ totalSpots, totalNeighborhoods, weather }) {
+  console.log('Weather in StatsStrip:', weather);
   const items = [
     { v: totalSpots || '—', l: 'Curated spots' },
     { v: totalNeighborhoods,  l: 'Neighborhoods covered' },
@@ -930,18 +931,43 @@ export default function Home() {
     return counts;
   }, [locations]);
 
-  // Reuse any cached weather from the existing Weather component
   const [weather, setWeather] = useState(null);
   useEffect(() => {
+    const CACHE_KEY = 'weatherCache';
+    const CACHE_DURATION = 1000 * 60 * 30;
+    const apiKey = process.env.REACT_APP_ACCUWEATHER_API_KEY;
+    const locationKey = '351197';
+
+    const applyData = (data) => {
+      if (data?.Temperature) {
+        setWeather({ temp: data.Temperature.Imperial.Value, condition: data.WeatherText });
+      }
+    };
+
+    const fetchAndCache = async () => {
+      try {
+        const res = await fetch(
+          `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}`
+        );
+        const json = await res.json();
+        const data = json[0];
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+        applyData(data);
+      } catch {}
+    };
+
     try {
-      const raw = localStorage.getItem('weatherCache');
+      const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
-        const { data } = JSON.parse(raw);
-        if (data?.Temperature) {
-          setWeather({ temp: data.Temperature.Imperial.Value, condition: data.WeatherText });
+        const { data, timestamp } = JSON.parse(raw);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          applyData(data);
+          return;
         }
       }
     } catch {}
+
+    if (apiKey) fetchAndCache();
   }, []);
 
   return (
